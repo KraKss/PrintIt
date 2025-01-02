@@ -3,7 +3,7 @@ import {Text, View, StyleSheet} from "react-native";
 export default function Purchase() {
     return (
         <View style={styles.container}>
-            <Text style={styles.text}>Bienvenue sur l'écran Purchase!</Text>
+            <Text style={styles.text}>Bienvenue sur l'écran Purchase !</Text>
         </View>
     );
 }

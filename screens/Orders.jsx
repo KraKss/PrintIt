@@ -3,7 +3,7 @@ import {Text, View, StyleSheet} from "react-native";
 export default function Orders() {
     return (
         <View style={styles.container}>
-            <Text style={styles.text}>Bienvenue sur l'écran Orders!</Text>
+            <Text style={styles.text}>Bienvenue sur l'écran Orders !</Text>
         </View>
     );
 }
