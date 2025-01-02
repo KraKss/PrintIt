@@ -1,9 +1,9 @@
 import {Text, View, StyleSheet} from "react-native";
 
-export default function Purchase() {
+export default function OrderHistory() {
     return (
         <View style={styles.container}>
-            <Text style={styles.text}>Bienvenue sur l'écran Purchase !</Text>
+            <Text style={styles.text}>Bienvenue sur l'écran OrderHistory!</Text>
         </View>
     );
 }
