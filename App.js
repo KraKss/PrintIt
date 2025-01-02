@@ -8,8 +8,14 @@ import Login from './screens/Login';
 import SignUp from './screens/SignUp';
 import Home from './screens/Home';
 import Loading from './screens/Loading';
+import {createBottomTabNavigator} from "@react-navigation/bottom-tabs";
+import Purchase from "./screens/Purchase";
+import Orders from "./screens/Orders";
+import Projects from "./screens/Projects";
+import Icon from "react-native-vector-icons/Ionicons";
 
 const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 
 function AuthStack() {
     return (
@@ -22,9 +28,50 @@ function AuthStack() {
 
 function AppStack() {
     return (
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="Home" component={Home} />
-        </Stack.Navigator>
+        <Tab.Navigator
+            screenOptions={{
+                headerShown: false,
+                tabBarActiveTintColor: 'red',
+                tabBarInactiveTintColor: 'black',
+        }}
+        >
+            <Tab.Screen
+                name="Acceuil"
+                component={Home}
+                options={{
+                    tabBarIcon: ({ color, size }) => (
+                        <Icon name="home-outline" size={size} color={color} />
+                    ),
+                }}
+            />
+            <Tab.Screen
+                name="Mes Achats"
+                component={Purchase}
+                options={{
+                    tabBarIcon: ({ color, size }) => (
+                        <Icon name="cart-outline" size={size} color={color} />
+                    ),
+                }}
+            />
+            <Tab.Screen
+                name="Mes Commandes"
+                component={Orders}
+                options={{
+                    tabBarIcon: ({ color, size }) => (
+                        <Icon name="bag-outline" size={size} color={color} />
+                    ),
+                }}
+            />
+            <Tab.Screen
+                name="Mes produits"
+                component={Projects}
+                options={{
+                    tabBarIcon: ({ color, size }) => (
+                        <Icon name="create-outline" size={size} color={color} />
+                    ),
+                }}
+            />
+        </Tab.Navigator>
     );
 }
 
