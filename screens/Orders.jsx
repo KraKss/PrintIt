@@ -1,6 +1,5 @@
 import { Text, View, StyleSheet, TouchableOpacity, Image, SafeAreaView, FlatList } from "react-native";
 import { useState } from "react";
-import Sidebar from "./Sidebar";
 import Icon from "react-native-vector-icons/Ionicons";
 
 export default function Orders() {

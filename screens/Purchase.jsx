@@ -1,58 +1,11 @@
 import { Text, View, StyleSheet, TouchableOpacity, Image, SafeAreaView, FlatList } from "react-native";
-import { useState } from "react";
-import Sidebar from "./Sidebar";
-import Icon from "react-native-vector-icons/Ionicons";
 
 export default function Purchase() {
     return (
         <View style={styles.container}>
             <Text style={styles.text}>Bienvenue sur l'écran Purchase !</Text>
-
         </View>
     );
-
-    if (isSidebarVisible) {
-        return (
-            <View style={styles.sidebarOverlay}>
-                <Sidebar />
-                <TouchableOpacity style={styles.closeSidebar} onPress={() => setIsSidebarVisible(false)}>
-                    <Icon name="close-outline" size={30} color="#fff" />
-                </TouchableOpacity>
-            </View>
-        );
-    } else {
-        return (
-            <SafeAreaView style={styles.container}>
-                <View style={styles.mainContent}>
-                    {/* Header */}
-                    <View style={styles.header}>
-                        <TouchableOpacity onPress={() => setIsSidebarVisible(true)}>
-                            <Icon name="menu-outline" size={24} color="black" />
-                        </TouchableOpacity>
-                        <Image source={{ uri: "https://via.placeholder.com/40" }} style={styles.logo} />
-                        <Icon name="search-outline" size={24} color="black" />
-                    </View>
-                    <Text style={styles.sectionTitle}>Mes achats</Text>
-                    {/* Liste des achats */}
-                    <FlatList
-                        data={purchases}
-                        renderItem={renderPurchase}
-                        keyExtractor={(item) => item.id.toString()}
-                        contentContainerStyle={styles.list}
-                    />
-
-                    {/* Total Amount and Order Button */}
-                    <View style={styles.footer}>
-                        <Text style={styles.totalText}>Montant total</Text>
-                        <Text style={styles.totalAmount}>${totalAmount}</Text>
-                        <TouchableOpacity style={styles.orderButton}>
-                            <Text style={styles.orderButtonText}>Commander</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </SafeAreaView>
-        );
-    }
 }
 
 const styles = StyleSheet.create({
