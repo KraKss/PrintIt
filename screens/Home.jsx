@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
     View,
     Text,
@@ -9,10 +8,18 @@ import {
     SafeAreaView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import Sidebar from './Sidebar';
+import {useDispatch, useSelector} from "react-redux";
+import {logout} from "../redux/userSlice";
+import {useNavigation} from "@react-navigation/native";
 
 export default function Home() {
-    const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+    const navigation = useNavigation();
+    const dispatch = useDispatch();
+    const theme = useSelector((state) => state.theme.mode);
+    const colorTheme = theme === 'light' ? 'black' : 'white';
+    const themedBackgroundColor = theme === 'light' ? '#f9f9f9' : '#5e5e5e';
+    const authorColor = theme === 'light' ? '#888' : '#e5e4e4'
+    const handleLogout = () => dispatch(logout());
 
     const popularPrints = [
         { id: 1, name: 'Modulateur évier', author: 'Lucie Fer', price: '$5.22', liked: false },
@@ -24,142 +31,80 @@ export default function Home() {
     ];
 
     const featuredItems = [
-        { id: 1, image: 'https://via.placeholder.com/200', title: 'MapMonde', author: 'Annette Black', price: '$5.22' },
-        { id: 2, image: 'https://via.placeholder.com/200', title: 'Eclipse', author: 'John Doe', price: '$8.99' },
-        { id: 3, image: 'https://via.placeholder.com/200', title: 'Stellar', author: 'Jane Doe', price: '$12.50' },
-        { id: 4, image: 'https://via.placeholder.com/200', title: 'Nebula', author: 'Alice Smith', price: '$7.30' },
+        { id: 1, image: require('../assets/printit_logo.png'), title: 'MapMonde', author: 'Annette Black', price: '$5.22' },
+        { id: 2, image: require('../assets/printit_logo.png'), title: 'Eclipse', author: 'John Doe', price: '$8.99' },
+        { id: 3, image: require('../assets/printit_logo.png'), title: 'Stellar', author: 'Jane Doe', price: '$12.50' },
+        { id: 4, image: require('../assets/printit_logo.png'), title: 'Nebula', author: 'Alice Smith', price: '$7.30' },
     ];
 
     const renderPopularItem = ({ item }) => (
-        <View style={styles.popularItem}>
+        <View style={{...styles.popularItem, backgroundColor: themedBackgroundColor}}>
             <Image source={{ uri: 'https://via.placeholder.com/50' }} style={styles.popularImage} />
-            <View style={styles.popularText}>
-                <Text style={styles.itemTitle}>{item.name}</Text>
-                <Text style={styles.itemAuthor}>{item.author}</Text>
+            <View style={{...styles.popularText, color:colorTheme}}>
+                <Text style={{...styles.itemTitle, color:colorTheme}} >{item.name}</Text>
+                <Text style={{color: authorColor}}>{item.author}</Text>
                 <Text style={styles.itemPrice}>{item.price}</Text>
             </View>
-            <TouchableOpacity>
+            <TouchableOpacity style={{marginRight: 10}}>
                 <Icon name={item.liked ? 'heart' : 'heart-outline'} size={24} color="red" />
-            </TouchableOpacity>
-            <TouchableOpacity>
-                <Icon name="cart-outline" size={24} color="black" />
             </TouchableOpacity>
         </View>
     );
 
-    if (isSidebarVisible) {
-        return (
-            <View style={styles.sidebarOverlay}>
-            <Sidebar />
-            <TouchableOpacity
-                style={styles.closeSidebar}
-                onPress={() => setIsSidebarVisible(false)}
-            >
-                <Icon name="close-outline" size={30} color="#fff" />
-            </TouchableOpacity>
-        </View>
-        )
-    } else {
-        return (
-            <SafeAreaView style={styles.container}>
-                {isSidebarVisible && (
-                    <View style={styles.sidebarOverlay}>
-                        <Sidebar />
-                        <TouchableOpacity
-                            style={styles.closeSidebar}
-                            onPress={() => setIsSidebarVisible(false)}
-                        >
-                            <Icon name="close-outline" size={30} color="#fff" />
-                        </TouchableOpacity>
-                    </View>
-                )}
-
-                {/* Main Content */}
-                <View style={styles.mainContent}>
-                    {/* Header */}
-                    <View style={styles.header}>
-                        <TouchableOpacity onPress={() => setIsSidebarVisible(true)}>
-                            <Icon name="menu-outline" size={24} color="black" />
-                        </TouchableOpacity>
-                        <Image source={{ uri: 'https://via.placeholder.com/40' }} style={styles.logo} />
-                        <Icon name="search-outline" size={24} color="black" />
-                    </View>
-
-                    {/* Featured Section */}
-                    <View style={styles.featuredSection}>
-                        <Text style={styles.sectionTitle}>Nouveaux produits</Text>
-                        <FlatList
-                            data={featuredItems}
-                            renderItem={({ item }) => (
-                                <View style={styles.featuredItem}>
-                                    <Image source={{ uri: item.image }} style={styles.featuredImage} />
-                                    <Text style={styles.featuredTitle}>{item.title}</Text>
-                                    <Text style={styles.featuredAuthor}>{item.author}</Text>
-                                    <Text style={styles.featuredPrice}>{item.price}</Text>
-                                </View>
-                            )}
-                            keyExtractor={(item) => item.id.toString()}
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                        />
-                    </View>
-
-                    {/* Popular Prints Section */}
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Impressions populaires</Text>
-                        <TouchableOpacity>
-                            <Text style={styles.viewAll}>Voir tout</Text>
-                        </TouchableOpacity>
-                    </View>
-                    <FlatList
-                        data={popularPrints}
-                        renderItem={renderPopularItem}
-                        keyExtractor={(item) => item.id.toString()}
-                        style={styles.popularList}
-                    />
-
-                    {/* Bottom Navigation */}
-                    <SafeAreaView style={styles.bottomNav}>
-                        <TouchableOpacity style={styles.navItem}>
-                            <Icon name="storefront-outline" size={24} color="red" />
-                            <Text style={styles.navTextActive}>Modèles</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.navItem}>
-                            <Icon name="cart-outline" size={24} color="black" />
-                            <Text style={styles.navTextInactive}>Mes achats</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.navItem}>
-                            <Icon name="clipboard-outline" size={24} color="black" />
-                            <Text style={styles.navTextInactive}>Mes commandes</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.navItem}>
-                            <Icon name="print-outline" size={24} color="black" />
-                            <Text style={styles.navTextInactive}>Mes impressions</Text>
-                        </TouchableOpacity>
-                    </SafeAreaView>
+    return (
+        <SafeAreaView style={{...styles.container, backgroundColor: themedBackgroundColor}}>
+            <View style={styles.mainContent}>
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => navigation.openDrawer()}>
+                        <Icon name="menu-outline" size={24} color={colorTheme} />
+                    {/*    todo avatar */}
+                    </TouchableOpacity>
+                    <Image style={styles.logo} source={require('../assets/printit_logo.png')} />
+                    <Icon name="search-outline" size={24} color={colorTheme} />
+                    <TouchableOpacity onPress={handleLogout}>
+                        <Icon name="search-outline" size={24} color={colorTheme} />
+                    </TouchableOpacity>
                 </View>
-            </SafeAreaView>
-        );
-    }
+
+                <View style={styles.featuredSection}>
+                    <Text style={{...styles.sectionTitle, color:colorTheme}}>Nouveaux produits</Text>
+                    <FlatList
+                        data={featuredItems}
+                        renderItem={({ item }) => (
+                            <View style={styles.featuredItem}>
+                                <Image style={styles.featuredImage} source={item.image} />
+                                <Text style={{...styles.featuredTitle, color:colorTheme}}>{item.title}</Text>
+                                <Text style={{...styles.featuredAuthor, color:authorColor}}>{item.author}</Text>
+                                <Text style={styles.featuredPrice}>{item.price}</Text>
+                            </View>
+                        )}
+                        keyExtractor={(item) => item.id.toString()}
+                        horizontal={true}
+                        showsHorizontalScrollIndicator={false}
+                    />
+                </View>
+
+                <View style={styles.section}>
+                    <Text style={{...styles.sectionTitle, color:colorTheme}}>Impressions populaires</Text>
+                    <TouchableOpacity>
+                        <Text style={styles.viewAll}>Voir tout</Text>
+                    </TouchableOpacity>
+                </View>
+                <FlatList
+                    data={popularPrints}
+                    renderItem={renderPopularItem}
+                    keyExtractor={(item) => item.id.toString()}
+                    style={styles.popularList}
+                />
+
+            </View>
+        </SafeAreaView>
+    );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f9f9f9',
-    },
-    sidebarOverlay: {
-        flex: 1,
-        position: 'absolute',
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'rgba(0,0,0,0.7)',
-        zIndex: 99,
-    },
-    closeSidebar: {
-        position: 'absolute',
-        top: 40,
-        right: 20,
     },
     mainContent: {
         flex: 1,
@@ -178,8 +123,6 @@ const styles = StyleSheet.create({
     featuredSection: {
         alignItems: 'center',
         marginVertical: 20,
-        borderWidth: 3,
-        borderColor: '#0233ff',
     },
     featuredItem: {
         alignItems: 'center',
@@ -205,6 +148,7 @@ const styles = StyleSheet.create({
     section: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+        alignItems: 'center',
         paddingHorizontal: 20,
         marginTop: 10,
     },
@@ -218,13 +162,12 @@ const styles = StyleSheet.create({
     },
     popularList: {
         paddingHorizontal: 20,
-        marginBottom: 20,
+        marginBottom: 0,
     },
     popularItem: {
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 15,
-        backgroundColor: '#fff',
         borderRadius: 10,
         padding: 10,
         elevation: 2,
@@ -242,37 +185,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     },
-    itemAuthor: {
-        color: '#888',
-    },
     itemPrice: {
         color: '#ff4c4c',
-    },
-    bottomNav: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        backgroundColor: '#fff',
-        // paddingVertical: 10,
-        borderWidth: 1,
-        borderColor: '#ff0000',
-        height: 60,
-        zIndex: 5,
-    },
-    navItem: {
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#0233ff',
-    },
-    navTextActive: {
-        color: 'red',
-        fontSize: 12,
-    },
-    navTextInactive: {
-        color: '#888',
-        fontSize: 12,
-    },
+    }
 });

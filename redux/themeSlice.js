@@ -1,6 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useColorScheme } from 'react-native';
 
 const themeSlice = createSlice({
     name: 'theme',
@@ -18,10 +17,9 @@ const themeSlice = createSlice({
 
 export const { toggleTheme, setThemeFromStorage } = themeSlice.actions;
 
-export const getThemeFromStorage = () => async (dispatch) => {
+export const getThemeFromStorage = (systemTheme) => async (dispatch) => {
     try {
         const storedTheme = await AsyncStorage.getItem('printit_theme');
-        const systemTheme = useColorScheme();
 
         if (storedTheme) {
             dispatch(setThemeFromStorage(storedTheme));
