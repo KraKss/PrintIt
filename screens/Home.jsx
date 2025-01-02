@@ -130,8 +130,6 @@ const styles = StyleSheet.create({
     featuredSection: {
         alignItems: 'center',
         marginVertical: 20,
-        borderWidth: 3,
-        borderColor: '#0233ff',
     },
     featuredItem: {
         alignItems: 'center',
