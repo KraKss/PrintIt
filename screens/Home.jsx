@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
     View,
     Text,
@@ -9,13 +8,12 @@ import {
     SafeAreaView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import Sidebar from './Sidebar';
 import {useDispatch} from "react-redux";
 import {logout} from "../redux/userSlice";
+import {useNavigation} from "@react-navigation/native";
 
 export default function Home() {
-    const [isSidebarVisible, setIsSidebarVisible] = useState(false);
-    const closeSidebar = () => setIsSidebarVisible(false);
+    const navigation = useNavigation();
     const dispatch = useDispatch();
     const handleLogout = () => dispatch(logout());
 
@@ -52,15 +50,13 @@ export default function Home() {
         </View>
     );
 
-    if (isSidebarVisible) return <Sidebar closeSidebar={closeSidebar}/>;
-
     return (
         <SafeAreaView style={styles.container}>
             {/* Main Content */}
             <View style={styles.mainContent}>
                 {/* Header */}
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={() => setIsSidebarVisible(true)}>
+                    <TouchableOpacity onPress={() => navigation.openDrawer()}>
                         <Icon name="menu-outline" size={24} color="black" />
                     </TouchableOpacity>
                     <Image source={{ uri: 'https://via.placeholder.com/40' }} style={styles.logo} />

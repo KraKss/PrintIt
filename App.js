@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { useEffect, useState } from 'react';
+import {NavigationContainer, useNavigation} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import store from './redux/store';
@@ -13,9 +13,12 @@ import Purchase from "./screens/Purchase";
 import Orders from "./screens/Orders";
 import Projects from "./screens/Projects";
 import Icon from "react-native-vector-icons/Ionicons";
+import {createDrawerNavigator, DrawerItemList} from "@react-navigation/drawer";
+import {SafeAreaView, TouchableOpacity} from "react-native";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+const Drawer = createDrawerNavigator();
 
 function AuthStack() {
     return (
@@ -26,6 +29,59 @@ function AuthStack() {
     );
 }
 
+function DrawerNavigator() {
+    return (
+        <Drawer.Navigator
+            screenOptions={{
+                headerShown: false,
+                drawerActiveBackgroundColor: 'transparent',
+                drawerActiveTintColor: 'black',
+                drawerStyle: {
+                    backgroundColor: '#fff',
+                },
+            }}
+            drawerContent={(props) => <CustomDrawerContent {...props} />}
+        >
+            <Drawer.Screen
+                name="AppStack"
+                component={AppStack}
+                options={{
+                    drawerItemStyle: {
+                        opacity:0
+                    }
+                }}
+            />
+            <Drawer.Screen
+                name="Profile"
+                component={SignUp}
+                options={{
+                    drawerIcon: ({ color, size }) => (
+                        <Icon name="person-outline" size={size} color={color} />
+                    ),
+                }}
+            />
+        </Drawer.Navigator>
+    );
+}
+
+function CustomDrawerContent(props) {
+    const { navigation } = props;
+
+    return (
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+            <SafeAreaView style={{ padding: 20, flexDirection: 'row', justifyContent: 'flex-end', marginRight:10}}>
+                <TouchableOpacity onPress={() => (
+                    navigation.navigate('AppStack')
+                )}>
+                    <Icon name="close" size={30} color="black" />
+                </TouchableOpacity>
+            </SafeAreaView>
+
+            <DrawerItemList {...props} />
+        </SafeAreaView>
+    );
+}
+
 function AppStack() {
     return (
         <Tab.Navigator
@@ -33,10 +89,10 @@ function AppStack() {
                 headerShown: false,
                 tabBarActiveTintColor: 'red',
                 tabBarInactiveTintColor: 'black',
-        }}
+            }}
         >
             <Tab.Screen
-                name="Acceuil"
+                name="Accueil"
                 component={Home}
                 options={{
                     tabBarIcon: ({ color, size }) => (
@@ -85,10 +141,9 @@ function RootNavigator() {
             dispatch(getUserFromStorage()).finally(() => {
                 setIsLoading(false);
             });
-        }
+        };
         setTimeout(loadUserFromStorage, 800); // todo animation
     }, [dispatch]);
-
 
     if (isLoading) {
         return <Loading />;
@@ -96,7 +151,8 @@ function RootNavigator() {
 
     return (
         <NavigationContainer>
-            {isAuthenticated ? <AppStack /> : <AuthStack />}
+            {/* Si l'utilisateur est authentifié, afficher le DrawerNavigator */}
+            {isAuthenticated ? <DrawerNavigator /> : <AuthStack />}
         </NavigationContainer>
     );
 }
