@@ -3,38 +3,11 @@ import { useState } from "react";
 import Sidebar from "./Sidebar";
 import Icon from "react-native-vector-icons/Ionicons";
 
-export default function Purchases() {
-    const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+export default function Purchase() {
+    return (
+        <View style={styles.container}>
+            <Text style={styles.text}>Bienvenue sur l'écran Purchase !</Text>
 
-    const [purchases, setPurchases] = useState([
-        {id: 1, name: "Modulateur évier", seller: "Lucie Fer", price: 5.22, image: "https://via.placeholder.com/50"},
-        {id: 2, name: "Modulateur évier", seller: "Lucie Fer", price: 5.22, image: "https://via.placeholder.com/50"},
-        {id: 3, name: "Modulateur évier", seller: "Lucie Fer", price: 5.22, image: "https://via.placeholder.com/50"},
-        {id: 4, name: "Modulateur évier", seller: "Lucie Fer", price: 5.22, image: "https://via.placeholder.com/50"},
-        {id: 5, name: "Modulateur évier", seller: "Lucie Fer", price: 5.22, image: "https://via.placeholder.com/50"},
-        {id: 6, name: "Modulateur évier", seller: "Lucie Fer", price: 5.22, image: "https://via.placeholder.com/50"},
-        {id: 7, name: "Modulateur évier", seller: "Lucie Fer", price: 5.22, image: "https://via.placeholder.com/50"},
-        {id: 8, name: "Modulateur évier", seller: "Lucie Fer", price: 5.22, image: "https://via.placeholder.com/50"},
-    ]);
-
-    const removeItem = (id) => {
-        setPurchases((prevPurchases) => prevPurchases.filter((item) => item.id !== id));
-    };
-
-    const totalAmount = purchases.reduce((total, item) => total + item.price, 0).toFixed(2);
-
-    const renderPurchase = ({item}) => (
-        <View style={styles.card}>
-            <Image source={{uri: item.image}} style={styles.productImage}/>
-            <View style={styles.textContainer}>
-                <Text style={styles.productName}>{item.name}</Text>
-                <Text style={styles.sellerName}>{item.seller}</Text>
-                <Text style={styles.productPrice}>${item.price.toFixed(2)}</Text>
-            </View>
-            {/* Bouton pour supprimer l'article */}
-            <TouchableOpacity style={styles.cartButton} onPress={() => removeItem(item.id)}>
-                <Icon name="close-circle-outline" size={24} color="#E40D2F"/>
-            </TouchableOpacity>
         </View>
     );
 
