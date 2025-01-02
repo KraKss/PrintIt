@@ -36,38 +36,38 @@ function AppStack() {
         }}
         >
             <Tab.Screen
-                name="Home"
+                name="Acceuil"
                 component={Home}
                 options={{
                     tabBarIcon: ({ color, size }) => (
-                        <Icon name="home" size={size} color={color} />
+                        <Icon name="home-outline" size={size} color={color} />
                     ),
                 }}
             />
             <Tab.Screen
-                name="Purchase"
+                name="Mes Achats"
                 component={Purchase}
                 options={{
                     tabBarIcon: ({ color, size }) => (
-                        <Icon name="cart" size={size} color={color} />
+                        <Icon name="cart-outline" size={size} color={color} />
                     ),
                 }}
             />
             <Tab.Screen
-                name="Orders"
+                name="Mes Commandes"
                 component={Orders}
                 options={{
                     tabBarIcon: ({ color, size }) => (
-                        <Icon name="receipt" size={size} color={color} />
+                        <Icon name="bag-outline" size={size} color={color} />
                     ),
                 }}
             />
             <Tab.Screen
-                name="Projects"
+                name="Mes produits"
                 component={Projects}
                 options={{
                     tabBarIcon: ({ color, size }) => (
-                        <Icon name="business" size={size} color={color} />
+                        <Icon name="create-outline" size={size} color={color} />
                     ),
                 }}
             />

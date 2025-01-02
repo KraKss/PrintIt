@@ -63,7 +63,6 @@ export default function Login({ navigation }) {
                 <View style={styles.inner}>
                     <Image style={styles.logo} source={require('../assets/printit_logo.png')} />
                     <Text style={styles.logoTitle}>Print It</Text>
-                    <Text style={styles.title}>Connexion</Text>
 
                     <TextInput
                         placeholder="Adresse mail"

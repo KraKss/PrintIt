@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
     View,
     Text,
@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-export default function Sidebar({ navigation }) {
+export default function Sidebar({ closeSidebar }) {
     const [darkMode, setDarkMode] = useState(false);
 
     return (
@@ -23,7 +23,7 @@ export default function Sidebar({ navigation }) {
                 <Text style={[styles.profileName, darkMode && styles.textDark]}>
                     Floyd Miles
                 </Text>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={closeSidebar}>
                     <Icon name="chevron-forward-outline" size={24} color={darkMode ? "#fff" : "#000"} />
                 </TouchableOpacity>
             </View>
