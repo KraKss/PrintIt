@@ -1,8 +1,7 @@
 import axios from 'axios';
-import API_ROUTES from "./indexAPI";
 
 export const API = axios.create({
-    baseURL: API_ROUTES.API_ROUTE,
+    baseURL: process.env.EXPO_PUBLIC_BASE_API_ROUTE,
     withCredentials: true,
     headers: {
         'X-Requested-With': 'XMLHttpRequest',
