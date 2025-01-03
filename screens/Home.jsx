@@ -11,6 +11,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {useDispatch, useSelector} from "react-redux";
 import {logout} from "../redux/userSlice";
 import {useNavigation} from "@react-navigation/native";
+import {fetcher} from "../utils/API";
+import useSWR from "swr";
 
 export default function Home() {
     const navigation = useNavigation();
@@ -30,12 +32,21 @@ export default function Home() {
         { id: 6, name: 'Modulateur évier', author: 'Lucie Fer', price: '$5.22', liked: false },
     ];
 
-    const featuredItems = [
-        { id: 1, image: require('../assets/printit_logo.png'), title: 'MapMonde', author: 'Annette Black', price: '$5.22' },
-        { id: 2, image: require('../assets/printit_logo.png'), title: 'Eclipse', author: 'John Doe', price: '$8.99' },
-        { id: 3, image: require('../assets/printit_logo.png'), title: 'Stellar', author: 'Jane Doe', price: '$12.50' },
-        { id: 4, image: require('../assets/printit_logo.png'), title: 'Nebula', author: 'Alice Smith', price: '$7.30' },
-    ];
+    const { data: featuredItems, error } = useSWR(
+        `${process.env.EXPO_PUBLIC_BASE_API_ROUTE}${process.env.EXPO_PUBLIC_PRODUCT_ROUTE}/recents`,
+        fetcher
+    );
+
+    const isLoading = !featuredItems && !error;
+
+    const renderFeaturedItem = ({ item }) => (
+        <View style={styles.featuredItem}>
+            <Image style={styles.featuredImage} source={{ uri: `https://picsum.photos/id/${item.id + 3}/200/300` }} />
+            <Text style={{ ...styles.featuredTitle, color: colorTheme }}>{item.name}</Text>
+            <Text style={{ ...styles.featuredAuthor, color: authorColor }}>{item.description}</Text>
+            <Text style={styles.featuredPrice}>{`${item.price}$`}</Text>
+        </View>
+    );
 
     const renderPopularItem = ({ item }) => (
         <View style={{...styles.popularItem, backgroundColor: themedBackgroundColor}}>
@@ -68,20 +79,19 @@ export default function Home() {
 
                 <View style={styles.featuredSection}>
                     <Text style={{...styles.sectionTitle, color:colorTheme}}>Nouveaux produits</Text>
-                    <FlatList
-                        data={featuredItems}
-                        renderItem={({ item }) => (
-                            <View style={styles.featuredItem}>
-                                <Image style={styles.featuredImage} source={item.image} />
-                                <Text style={{...styles.featuredTitle, color:colorTheme}}>{item.title}</Text>
-                                <Text style={{...styles.featuredAuthor, color:authorColor}}>{item.author}</Text>
-                                <Text style={styles.featuredPrice}>{item.price}</Text>
-                            </View>
-                        )}
-                        keyExtractor={(item) => item.id.toString()}
-                        horizontal={true}
-                        showsHorizontalScrollIndicator={false}
-                    />
+                    {isLoading ? (
+                        <Text style={{ color: colorTheme }}>Chargement...</Text>
+                    ) : error ? (
+                        <Text style={{ color: 'red' }}>Erreur de chargement des produits</Text>
+                    ) : (
+                        <FlatList
+                            data={featuredItems}
+                            renderItem={renderFeaturedItem}
+                            keyExtractor={(item) => item.id.toString()}
+                            horizontal={true}
+                            showsHorizontalScrollIndicator={false}
+                        />
+                    )}
                 </View>
 
                 <View style={styles.section}>
