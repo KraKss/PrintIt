@@ -46,7 +46,7 @@ export default function SignUp({ navigation }) {
         setIsLoading(true);
 
         try {
-            const formattedName = `${name} ${firstname}`
+            const formattedName = `${firstname} ${name}`
             const response = await API.post(`${process.env.EXPO_PUBLIC_BASE_API_ROUTE}${process.env.EXPO_PUBLIC_CREATE_USER_ROUTE}`, {
                 name: formattedName,
                 email,
@@ -84,7 +84,7 @@ export default function SignUp({ navigation }) {
                         onChangeText={setFirstname}
                     />
                     <TextInput
-                        placeholder="Nom"
+                        placeholder="Nom (facultatif)"
                         style={styles.input}
                         value={name}
                         onChangeText={setName}
