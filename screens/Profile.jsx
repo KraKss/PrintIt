@@ -1,57 +1,92 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { API } from "../utils/API";
 import { Text, View, StyleSheet, TouchableOpacity, Image, SafeAreaView, FlatList } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import StarRating from 'react-native-star-rating-widget';
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "../redux/userSlice";
+import {useFocusEffect} from "@react-navigation/native";
 
-export default function Profile() {
-
+export default function Profile({ navigation }) {
+    const dispatch = useDispatch();
+    const user = useSelector((state) => state.user.userInfo);
+    const token = useSelector((state) => state.user.token);
     const theme = useSelector((state) => state.theme.mode);
+    const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
+
     const colorTheme = theme === "light" ? "black" : "white";
     const themedBackgroundColor = theme === "light" ? "#F9F9F9" : "#2D2D2D";
     const cardTheme = theme === "light" ? "#FFF" : "#424242";
 
-    const user = {
-        user_id: 1,
-        name: "Kristin Watson",
-        email: "kristin.watson@example.com",
-        password: "password123",
-        address: "123 Main St, Cincinnati, OH",
-        bank_account: "US123456789012345",
-        profileImage: "https://via.placeholder.com/100",
+    const [products, setProducts] = useState([]);
+    const [reviews, setReviews] = useState([]);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            if (user?.id && token) {
+                fetchReviews(user.id, token);
+                fetchProducts(user.id, token);
+            }
+        }, [user, token])
+    );
+
+    const fetchReviews = async (userId, token) => {
+        try {
+            const response = await API.get(`/review/${userId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setReviews(response.data);
+        } catch (error) {
+            console.error("Erreur lors du chargement des reviews:", error);
+            setReviews([]);
+        }
     };
 
-    const reviews = [
-        { review_id: 1, rating: 5, comment: "Excellent produit, très satisfait.", seller_id: 1 },
-        { review_id: 2, rating: 4, comment: "Bon produit, mais livraison un peu lente.", seller_id: 1 },
-        { review_id: 3, rating: 3, comment: "Qualité correcte mais peut être améliorée.", seller_id: 1 },
-        { review_id: 4, rating: 5, comment: "Parfait, je recommande vivement.", seller_id: 1 },
-        { review_id: 5, rating: 2, comment: "Produit décevant, ne correspond pas à la description.", seller_id: 1 },
-    ];
-
-    const products = [
-        { product_id: 1, name: "Modulateur évier", date: "23/10/2024", image: "https://via.placeholder.com/50" },
-        { product_id: 2, name: "Porte-savon", date: "23/10/2024", image: "https://via.placeholder.com/50" },
-    ];
+    const fetchProducts = async (userId, token) => {
+        try {
+            const response = await API.get(`/product/seller/${userId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setProducts(response.data);
+        } catch (error) {
+            console.error("Erreur lors du chargement des produits:", error);
+            setProducts([]);
+        }
+    };
 
     const calculateAverageRating = () => {
-        const totalRatings = reviews.reduce((acc, review) => acc + review.rating, 0);
-        return Math.round(totalRatings / reviews.length);
+        if (!reviews || reviews.length === 0) return 0;
+        const totalRatings = reviews.reduce((acc, review) => acc + (review.rating || 0), 0);
+        const average = totalRatings / reviews.length;
+        return isNaN(average) ? 0 : Math.round(average);
     };
 
-    const countReviews = () => {
-        return reviews.length;
-    }
+    const countReviews = () => reviews.length;
+
+    const handleLogout = () => {
+        dispatch(logout());
+    };
 
     const renderProduct = ({ item }) => (
         <View style={[styles.productCard, { backgroundColor: cardTheme }]}>
-            <Image source={{ uri: item.image }} style={styles.productImage} />
+            <Image source={{ uri: item.image || "https://via.placeholder.com/50" }} style={styles.productImage} />
             <View style={styles.productInfo}>
                 <Text style={[styles.productName, { color: colorTheme }]}>{item.name}</Text>
-                <Text style={[styles.productDate, { color: colorTheme }]}>{item.date}</Text>
+                <Text style={[styles.productDate, { color: colorTheme }]}>Prix : {item.price}€</Text>
             </View>
         </View>
     );
+
+    if (!isAuthenticated || !user) {
+        return (
+            <View style={[styles.centered, { backgroundColor: themedBackgroundColor }]}>
+                <Text style={[styles.errorText, { color: colorTheme }]}>Vous devez être connecté pour voir votre profil.</Text>
+                <TouchableOpacity onPress={() => navigation.navigate("Login")} style={styles.loginButton}>
+                    <Text style={styles.loginButtonText}>Se connecter</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: themedBackgroundColor }]}>
@@ -62,11 +97,11 @@ export default function Profile() {
 
             {/* Profile Section */}
             <View style={[styles.profileSection, { backgroundColor: cardTheme }]}>
-                <Image source={{ uri: user.profileImage }} style={styles.profileImage} />
+                <Image source={{ uri: user.profileImage || "https://via.placeholder.com/100" }} style={styles.profileImage} />
                 <Text style={[styles.profileName, { color: colorTheme }]}>{user.name}</Text>
-                <Text style={[styles.profileLocation, { color: colorTheme }]}>{user.address}</Text>
+                <Text style={[styles.profileLocation, { color: colorTheme }]}>{user.address || "Adresse non renseignée"}</Text>
                 <View style={styles.ratingContainer}>
-                    <Text style={[styles.impressionsText, { color: colorTheme }]}>{countReviews()} impressions</Text>
+                    <Text style={[styles.impressionsText, { color: colorTheme }]}>{countReviews()} évaluations</Text>
                     <StarRating
                         rating={calculateAverageRating()}
                         onChange={() => {}}
@@ -75,12 +110,17 @@ export default function Profile() {
                         style={styles.starRating}
                     />
                 </View>
+
+                <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+                    <Text style={styles.logoutButtonText}>Se Déconnecter</Text>
+                </TouchableOpacity>
             </View>
+
             {/* Models Section */}
             <Text style={[styles.sectionTitle, { color: colorTheme }]}>Modèles</Text>
             <FlatList
                 data={products}
-                keyExtractor={(item) => item.product_id.toString()}
+                keyExtractor={(item, index) => item.id ? item.id.toString() : index.toString()}
                 renderItem={renderProduct}
                 contentContainerStyle={styles.productList}
             />
@@ -170,5 +210,16 @@ const styles = StyleSheet.create({
     },
     productDate: {
         fontSize: 12,
+    },
+    logoutButton: {
+        backgroundColor: "#E40D2F",
+        padding: 12,
+        borderRadius: 10,
+        marginTop: 20,
+    },
+    logoutButtonText: {
+        color: "#FFF",
+        fontSize: 16,
+        fontWeight: "bold",
     },
 });
