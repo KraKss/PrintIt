@@ -13,9 +13,6 @@ export default function History({  }) {
         <SafeAreaView style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Icon name="arrow-back-outline" size={24} color="#FFFFFF" />
-                </TouchableOpacity>
                 <View style={styles.headerCenter}>
                     <Icon name="time-outline" size={50} color="#FFFFFF" />
                     <Text style={styles.headerTitle}>Historique</Text>
