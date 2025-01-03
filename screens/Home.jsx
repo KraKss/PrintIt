@@ -71,7 +71,6 @@ export default function Home() {
                     {/*    todo avatar */}
                     </TouchableOpacity>
                     <Image style={styles.logo} source={require('../assets/printit_logo.png')} />
-                    <Icon name="search-outline" size={24} color={colorTheme} />
                     <TouchableOpacity onPress={handleLogout}>
                         <Icon name="search-outline" size={24} color={colorTheme} />
                     </TouchableOpacity>
