@@ -1,6 +1,7 @@
 import React from "react";
 import { Text, View, StyleSheet, TouchableOpacity, Image, SafeAreaView, FlatList } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
+import { useSelector } from "react-redux";
 
 const data = [
     { id: 1, name: "Projet 1", user: "Jane Cooper", date: "20/11/2024", image: "https://via.placeholder.com/50" },
@@ -8,9 +9,14 @@ const data = [
     { id: 3, name: "Projet 1", user: "Jane Cooper", date: "20/11/2024", image: "https://via.placeholder.com/50" },
 ];
 
-export default function History({  }) {
+export default function History() {
+    const theme = useSelector((state) => state.theme.mode);
+    const colorTheme = theme === "light" ? "black" : "white";
+    const themedBackgroundColor = theme === "light" ? "#F0F0F0" : "#2D2D2D";
+    const cardTheme = theme === "light" ? "#FFF" : "#424242";
+
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: themedBackgroundColor }]}>
             {/* Header */}
             <View style={styles.header}>
                 <View style={styles.headerCenter}>
@@ -23,12 +29,12 @@ export default function History({  }) {
             <FlatList
                 data={data}
                 renderItem={({ item }) => (
-                    <View style={styles.card}>
+                    <View style={[styles.card, { backgroundColor: cardTheme }]}>
                         <Image source={{ uri: item.image }} style={styles.cardImage} />
                         <View style={styles.cardTextContainer}>
-                            <Text style={styles.cardTitle}>{item.name}</Text>
-                            <Text style={styles.cardSubtitle}>{item.user}</Text>
-                            <Text style={styles.cardDate}>Commandé : {item.date}</Text>
+                            <Text style={[styles.cardTitle, { color: colorTheme }]}>{item.name}</Text>
+                            <Text style={[styles.cardSubtitle, { color: colorTheme }]}>{item.user}</Text>
+                            <Text style={[styles.cardDate, { color: colorTheme }]}>Commandé : {item.date}</Text>
                         </View>
                     </View>
                 )}
@@ -42,7 +48,6 @@ export default function History({  }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#F0F0F0",
     },
     header: {
         flexDirection: "row",
@@ -68,7 +73,6 @@ const styles = StyleSheet.create({
     card: {
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "#FFF",
         padding: 15,
         borderRadius: 10,
         marginBottom: 15,
@@ -89,15 +93,12 @@ const styles = StyleSheet.create({
     cardTitle: {
         fontSize: 16,
         fontWeight: "bold",
-        color: "#E40D2F",
     },
     cardSubtitle: {
         fontSize: 14,
-        color: "#555",
         marginVertical: 5,
     },
     cardDate: {
         fontSize: 12,
-        color: "#999",
     },
 });

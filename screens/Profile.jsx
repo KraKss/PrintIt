@@ -2,9 +2,14 @@ import React from "react";
 import { Text, View, StyleSheet, TouchableOpacity, Image, SafeAreaView, FlatList } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import StarRating from 'react-native-star-rating-widget';
+import { useSelector } from "react-redux";
 
 export default function Profile() {
 
+    const theme = useSelector((state) => state.theme.mode);
+    const colorTheme = theme === "light" ? "black" : "white";
+    const themedBackgroundColor = theme === "light" ? "#F9F9F9" : "#2D2D2D";
+    const cardTheme = theme === "light" ? "#FFF" : "#424242";
 
     const user = {
         user_id: 1,
@@ -39,29 +44,29 @@ export default function Profile() {
     }
 
     const renderProduct = ({ item }) => (
-        <View style={styles.productCard}>
+        <View style={[styles.productCard, { backgroundColor: cardTheme }]}>
             <Image source={{ uri: item.image }} style={styles.productImage} />
             <View style={styles.productInfo}>
-                <Text style={styles.productName}>{item.name}</Text>
-                <Text style={styles.productDate}>Ajouté le : {item.date}</Text>
+                <Text style={[styles.productName, { color: colorTheme }]}>{item.name}</Text>
+                <Text style={[styles.productDate, { color: colorTheme }]}>{item.date}</Text>
             </View>
         </View>
     );
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: themedBackgroundColor }]}>
             {/* Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, { backgroundColor: cardTheme }]}>
                 <Image source={require('../assets/printit_logo.png')} style={styles.logo} />
             </View>
 
             {/* Profile Section */}
-            <View style={styles.profileSection}>
+            <View style={[styles.profileSection, { backgroundColor: cardTheme }]}>
                 <Image source={{ uri: user.profileImage }} style={styles.profileImage} />
-                <Text style={styles.profileName}>{user.name}</Text>
-                <Text style={styles.profileLocation}>{user.address}</Text>
+                <Text style={[styles.profileName, { color: colorTheme }]}>{user.name}</Text>
+                <Text style={[styles.profileLocation, { color: colorTheme }]}>{user.address}</Text>
                 <View style={styles.ratingContainer}>
-                    <Text style={styles.impressionsText}>{countReviews()} impressions</Text>
+                    <Text style={[styles.impressionsText, { color: colorTheme }]}>{countReviews()} impressions</Text>
                     <StarRating
                         rating={calculateAverageRating()}
                         onChange={() => {}}
@@ -72,7 +77,7 @@ export default function Profile() {
                 </View>
             </View>
             {/* Models Section */}
-            <Text style={styles.sectionTitle}>Modèles</Text>
+            <Text style={[styles.sectionTitle, { color: colorTheme }]}>Modèles</Text>
             <FlatList
                 data={products}
                 keyExtractor={(item) => item.product_id.toString()}
@@ -86,38 +91,20 @@ export default function Profile() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#F5F5F5",
     },
     header: {
         alignItems: "center",
         padding: 15,
-        backgroundColor: "#FFFFFF",
         borderBottomWidth: 1,
         borderBottomColor: "#EAEAEA",
-    },
-    ratingContainer: {
-        alignItems: "center",
-        marginVertical: 10,
-    },
-    impressionsText: {
-        fontSize: 14,
-        color: "#555",
-        marginBottom: 5,
-        fontWeight: "bold",
-    },
-    starRating: {
-        marginTop: 5,
     },
     logo: {
         width: 40,
         height: 40,
-        alignItems: "center",
-
     },
     profileSection: {
         alignItems: "center",
         padding: 20,
-        backgroundColor: "#FFFFFF",
         marginBottom: 10,
         shadowColor: "#000",
         shadowOpacity: 0.1,
@@ -135,22 +122,23 @@ const styles = StyleSheet.create({
     profileName: {
         fontSize: 22,
         fontWeight: "bold",
-        color: "#333",
     },
     profileLocation: {
         fontSize: 14,
-        color: "#777",
         marginBottom: 10,
     },
-    ratingSection: {
-        flexDirection: "row",
+    ratingContainer: {
         alignItems: "center",
-        marginTop: 10,
+        marginVertical: 10,
+    },
+    impressionsText: {
+        fontSize: 14,
+        marginBottom: 5,
+        fontWeight: "bold",
     },
     sectionTitle: {
         fontSize: 18,
         fontWeight: "bold",
-        color: "#E40D2F",
         margin: 20,
     },
     productList: {
@@ -159,7 +147,6 @@ const styles = StyleSheet.create({
     productCard: {
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "#FFFFFF",
         padding: 15,
         borderRadius: 10,
         marginBottom: 10,
@@ -180,17 +167,8 @@ const styles = StyleSheet.create({
     productName: {
         fontSize: 16,
         fontWeight: "bold",
-        color: "#333",
     },
     productDate: {
         fontSize: 12,
-        color: "#777",
-    },
-    deleteButton: {
-        padding: 10,
-        backgroundColor: "#E40D2F",
-        borderRadius: 20,
-        justifyContent: "center",
-        alignItems: "center",
     },
 });
