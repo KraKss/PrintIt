@@ -19,8 +19,10 @@ export default function Home() {
     const dispatch = useDispatch();
     const theme = useSelector((state) => state.theme.mode);
     const colorTheme = theme === 'light' ? 'black' : 'white';
-    const themedBackgroundColor = theme === 'light' ? '#f9f9f9' : '#5e5e5e';
-    const authorColor = theme === 'light' ? '#888' : '#e5e4e4'
+    const themedBackgroundColor = theme === 'light' ? '#F0F0F0' : '#2D2D2D';
+    const cardTheme = theme === 'light' ? '#FFF' : '#424242';
+    const authorColor = theme === 'light' ? '#888' : '#E5E4E4';
+
     const handleLogout = () => dispatch(logout());
 
     const popularPrints = [
@@ -40,7 +42,7 @@ export default function Home() {
     const isLoading = !featuredItems && !error;
 
     const renderFeaturedItem = ({ item }) => (
-        <View style={styles.featuredItem}>
+        <View style={[styles.featuredItem, { backgroundColor: cardTheme }]}>
             <Image style={styles.featuredImage} source={{ uri: `https://picsum.photos/id/${item.id + 3}/200/300` }} />
             <Text style={{ ...styles.featuredTitle, color: colorTheme }}>{item.name}</Text>
             <Text style={{ ...styles.featuredAuthor, color: authorColor }}>{item.description}</Text>
@@ -49,26 +51,25 @@ export default function Home() {
     );
 
     const renderPopularItem = ({ item }) => (
-        <View style={{...styles.popularItem, backgroundColor: themedBackgroundColor}}>
+        <View style={[styles.popularItem, { backgroundColor: cardTheme }]}>
             <Image source={{ uri: 'https://via.placeholder.com/50' }} style={styles.popularImage} />
-            <View style={{...styles.popularText, color:colorTheme}}>
-                <Text style={{...styles.itemTitle, color:colorTheme}} >{item.name}</Text>
-                <Text style={{color: authorColor}}>{item.author}</Text>
+            <View style={styles.popularText}>
+                <Text style={[styles.itemTitle, { color: colorTheme }]}>{item.name}</Text>
+                <Text style={{ color: authorColor }}>{item.author}</Text>
                 <Text style={styles.itemPrice}>{item.price}</Text>
             </View>
-            <TouchableOpacity style={{marginRight: 10}}>
+            <TouchableOpacity style={{ marginRight: 10 }}>
                 <Icon name={item.liked ? 'heart' : 'heart-outline'} size={24} color="red" />
             </TouchableOpacity>
         </View>
     );
 
     return (
-        <SafeAreaView style={{...styles.container, backgroundColor: themedBackgroundColor}}>
+        <SafeAreaView style={[styles.container, { backgroundColor: themedBackgroundColor }]}>
             <View style={styles.mainContent}>
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => navigation.openDrawer()}>
                         <Icon name="menu-outline" size={24} color={colorTheme} />
-                    {/*    todo avatar */}
                     </TouchableOpacity>
                     <Image style={styles.logo} source={require('../assets/printit_logo.png')} />
                     <TouchableOpacity onPress={handleLogout}>
@@ -77,7 +78,7 @@ export default function Home() {
                 </View>
 
                 <View style={styles.featuredSection}>
-                    <Text style={{...styles.sectionTitle, color:colorTheme}}>Nouveaux produits</Text>
+                    <Text style={[styles.sectionTitle, { color: colorTheme }]}>Nouveaux produits</Text>
                     {isLoading ? (
                         <Text style={{ color: colorTheme }}>Chargement...</Text>
                     ) : error ? (
@@ -94,9 +95,9 @@ export default function Home() {
                 </View>
 
                 <View style={styles.section}>
-                    <Text style={{...styles.sectionTitle, color:colorTheme}}>Impressions populaires</Text>
+                    <Text style={[styles.sectionTitle, { color: colorTheme }]}>Impressions populaires</Text>
                     <TouchableOpacity>
-                        <Text style={styles.viewAll}>Voir tout</Text>
+                        <Text style={[styles.viewAll, { color: '#FF4C4C' }]}>Voir tout</Text>
                     </TouchableOpacity>
                 </View>
                 <FlatList
@@ -136,6 +137,9 @@ const styles = StyleSheet.create({
     featuredItem: {
         alignItems: 'center',
         marginHorizontal: 10,
+        borderRadius: 10,
+        padding: 15,
+        elevation: 2,
     },
     featuredImage: {
         width: 200,
@@ -151,7 +155,7 @@ const styles = StyleSheet.create({
         color: '#888',
     },
     featuredPrice: {
-        color: '#ff4c4c',
+        color: '#FF4C4C',
         fontWeight: 'bold',
     },
     section: {
@@ -164,10 +168,10 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        paddingBottom: 10
+        paddingBottom: 10,
     },
     viewAll: {
-        color: '#ff4c4c',
+        color: '#FF4C4C',
     },
     popularList: {
         paddingHorizontal: 20,
@@ -195,6 +199,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     itemPrice: {
-        color: '#ff4c4c',
+        color: '#FF4C4C',
     }
 });
