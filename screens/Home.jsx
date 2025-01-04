@@ -14,6 +14,9 @@ import { useNavigation } from "@react-navigation/native";
 import { fetcher } from "../utils/API";
 import useSWR from "swr";
 import {removeProductFromFavorites,addProductToFavorites} from "../redux/favoriteSlice";
+import ProductPopup from './ProductPopup';
+import {useState} from "react";
+
 
 export default function Home() {
     const navigation = useNavigation();
@@ -24,7 +27,8 @@ export default function Home() {
     const themedBackgroundColor = theme === 'light' ? '#F0F0F0' : '#2D2D2D';
     const cardTheme = theme === 'light' ? '#FFF' : '#424242';
     const authorColor = theme === 'light' ? '#888' : '#E5E4E4';
-
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState(null);
     const handleLogout = () => dispatch(logout());
     
     const handleToggleFavorite = (productId) => {
@@ -36,6 +40,7 @@ export default function Home() {
     };
 
     const { data: featuredItems, error: errorFeatured } = useSWR(
+
         `${process.env.EXPO_PUBLIC_BASE_API_ROUTE}${process.env.EXPO_PUBLIC_PRODUCT_ROUTE}/recents`,
         fetcher
     );
@@ -52,16 +57,22 @@ export default function Home() {
     const isLoadingPopular = !popularPrints && !errorPopular;
 
     const renderFeaturedItem = ({ item }) => (
-        <View style={[styles.featuredItem, { backgroundColor: cardTheme }]}>
+        <TouchableOpacity
+            style={[styles.featuredItem, { backgroundColor: cardTheme }]}
+            onPress={() => openModal(item)} // Ouvre le popup
+        >
             <Image style={styles.featuredImage} source={{ uri: `https://picsum.photos/id/${item.id + 3}/200/300` }} />
             <Text style={{ ...styles.featuredTitle, color: colorTheme }}>{item.name}</Text>
             <Text style={{ ...styles.featuredAuthor, color: authorColor }}>{item.description}</Text>
             <Text style={styles.featuredPrice}>{`${item.price}$`}</Text>
-        </View>
+        </TouchableOpacity>
     );
 
     const renderPopularItem = ({ item }) => (
-        <View style={[styles.popularItem, { backgroundColor: cardTheme }]}>
+        <TouchableOpacity
+            style={[styles.popularItem, { backgroundColor: cardTheme }]}
+            onPress={() => openModal(item)} // Ouvre le popup
+        >
             <Image source={{ uri: 'https://via.placeholder.com/50' }} style={styles.popularImage} />
             <View style={styles.popularText}>
                 <Text style={[styles.itemTitle, { color: colorTheme }]}>{item.name}</Text>
@@ -78,7 +89,7 @@ export default function Home() {
                 />
 
             </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
     );
 
     return (
@@ -118,6 +129,7 @@ export default function Home() {
                     </TouchableOpacity>
                 </View>
 
+
                 {isLoadingPopular ? (
                     <Text style={{ color: colorTheme }}>Chargement...</Text>
                 ) : errorPopular ? (
@@ -131,7 +143,20 @@ export default function Home() {
                     />
                 )}
 
+
+                <FlatList
+                    data={popularPrints}
+                    renderItem={renderPopularItem}
+                    keyExtractor={(item) => item.id.toString()}
+                    style={styles.popularList}
+                />
+
             </View>
+            <ProductPopup
+                visible={modalVisible}
+                product={selectedProduct}
+                onClose={closeModal}
+            />
         </SafeAreaView>
     );
 }
