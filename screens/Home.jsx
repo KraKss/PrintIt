@@ -153,14 +153,6 @@ export default function Home() {
                     />
                 )}
 
-
-                <FlatList
-                    data={popularPrints}
-                    renderItem={renderPopularItem}
-                    keyExtractor={(item) => item.id.toString()}
-                    style={styles.popularList}
-                />
-
             </View>
             <ProductPopup
                 visible={modalVisible}
