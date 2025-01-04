@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback  } from "react";
 import {
     View,
     Text,
@@ -11,7 +11,9 @@ import {
 import Icon from "react-native-vector-icons/Ionicons";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../redux/userSlice";
-import { useNavigation } from "@react-navigation/native";
+import {useFocusEffect, useNavigation} from "@react-navigation/native";
+import { API } from "../utils/API";
+import {removeProductFromBasket} from "../redux/basketSlice";
 
 export default function Purchases() {
     const navigation = useNavigation();
@@ -21,14 +23,57 @@ export default function Purchases() {
     const themedBackgroundColor = theme === 'light' ? '#F9F9F9' : '#2D2D2D';
     const cardTheme = theme === 'light' ? '#FFF' : '#424242';
 
-    const [purchases, setPurchases] = useState([
-        { id: 1, name: "Modulateur évier", seller: "Lucie Fer", price: 5.22, image: "https://via.placeholder.com/50" },
-        { id: 2, name: "Modulateur évier", seller: "Lucie Fer", price: 5.22, image: "https://via.placeholder.com/50" },
-        { id: 3, name: "Modulateur évier", seller: "Lucie Fer", price: 5.22, image: "https://via.placeholder.com/50" },
-        { id: 4, name: "Modulateur évier", seller: "Lucie Fer", price: 5.22, image: "https://via.placeholder.com/50" },
-    ]);
+    const idProductsInBasket = useSelector(state => state.basket.idProductsInBasket);
+    const token = useSelector(state => state.user.token);
+    const [purchases, setPurchases] = useState([]);
+
+    const fetchPurchases = async () => {
+        try {
+            if (!idProductsInBasket || idProductsInBasket.length === 0) {
+                setPurchases([]);
+                return;
+            }
+            console.log(idProductsInBasket);
+
+            const productDetails = await Promise.all(
+                idProductsInBasket.map(async (productId) => {
+                    try {
+                        const response = await API.get(`/product/${productId}`, {
+                            headers: { Authorization: `Bearer ${token}` },
+                        });
+
+                        if (!response.data || typeof response.data.price !== "number") {
+                            console.warn(`Produit invalide reçu pour ID ${productId}:`, response.data); //TODO a retirer
+                            response.data.price = parseFloat(response.data.price);
+                        }
+
+                        return response.data;
+                    } catch (error) {
+                        return {"description": "Le produit n'existe plus", "filament_type": 0, "id": productId, "name": "Produit Supprimé", "price": 0, "seller_id": 0};
+                        //TODO comme pour BI ajouter pour chaque table en id 0 un produit par default
+                    }
+                })
+            );
+
+            setPurchases(productDetails.filter(item => item !== null && item !== undefined));
+        } catch (error) {
+            console.error("Erreur lors du chargement des achats :", error);
+            setPurchases([]);
+        }
+    };
+
+    useEffect(() => {
+        fetchPurchases();
+    }, [idProductsInBasket, token]);
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchPurchases();
+        }, [idProductsInBasket])
+    );
 
     const removeItem = (id) => {
+        dispatch(removeProductFromBasket(id));
         setPurchases((prevPurchases) => prevPurchases.filter((item) => item.id !== id));
     };
 
@@ -49,6 +94,7 @@ export default function Purchases() {
     );
 
     return (
+        // TODO revoir ou mettre le paragraphe ci dessous
         <SafeAreaView style={[styles.container, { backgroundColor: themedBackgroundColor }]}>
             <View style={styles.mainContent}>
                 <View style={[styles.header, { backgroundColor: themedBackgroundColor }]}>

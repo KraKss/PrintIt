@@ -8,18 +8,21 @@ import {
     SafeAreaView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {useDispatch, useSelector} from "react-redux";
-import {logout} from "../redux/userSlice";
-import {useNavigation} from "@react-navigation/native";
-import {fetcher} from "../utils/API";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../redux/userSlice";
+import { useNavigation } from "@react-navigation/native";
+import { fetcher } from "../utils/API";
 import useSWR from "swr";
+import {removeProductFromFavorites,addProductToFavorites} from "../redux/favoriteSlice";
 import ProductPopup from './ProductPopup';
 import {useState} from "react";
+
 
 export default function Home() {
     const navigation = useNavigation();
     const dispatch = useDispatch();
     const theme = useSelector((state) => state.theme.mode);
+    const FavoritesIDList = useSelector((state) => state.favorites.idProductsInFavorites);
     const colorTheme = theme === 'light' ? 'black' : 'white';
     const themedBackgroundColor = theme === 'light' ? '#F0F0F0' : '#2D2D2D';
     const cardTheme = theme === 'light' ? '#FFF' : '#424242';
@@ -37,21 +40,31 @@ export default function Home() {
         setSelectedProduct(null);
         setModalVisible(false);
     };
-    const popularPrints = [
-        { id: 1, name: 'Modulateur évier', author: 'Lucie Fer', price: '$5.22', liked: false },
-        { id: 2, name: 'Modulateur évier', author: 'Lucie Fer', price: '$5.22', liked: false },
-        { id: 3, name: 'Modulateur évier', author: 'Lucie Fer', price: '$5.22', liked: true },
-        { id: 4, name: 'Modulateur évier', author: 'Lucie Fer', price: '$5.22', liked: true },
-        { id: 5, name: 'Modulateur évier', author: 'Lucie Fer', price: '$5.22', liked: false },
-        { id: 6, name: 'Modulateur évier', author: 'Lucie Fer', price: '$5.22', liked: false },
-    ];
+    
+    const handleToggleFavorite = (productId) => {
+        if (FavoritesIDList.includes(productId)) {
+            dispatch(removeProductFromFavorites(productId));
+        } else {
+            dispatch(addProductToFavorites(productId));
+        }
+    };
 
-    const { data: featuredItems, error } = useSWR(
+    const { data: featuredItems, error: errorFeatured } = useSWR(
+
         `${process.env.EXPO_PUBLIC_BASE_API_ROUTE}${process.env.EXPO_PUBLIC_PRODUCT_ROUTE}/recents`,
         fetcher
     );
 
-    const isLoading = !featuredItems && !error;
+    const { data: popularPrints, error: errorPopular } = useSWR(
+        `${process.env.EXPO_PUBLIC_BASE_API_ROUTE}${process.env.EXPO_PUBLIC_PRODUCT_ROUTE}/popular`,
+        fetcher
+    );
+
+    //popularPrints.forEach(print => {console.log(print);})
+    console.log(FavoritesIDList);
+
+    const isLoadingFeatured = !featuredItems && !errorFeatured;
+    const isLoadingPopular = !popularPrints && !errorPopular;
 
     const renderFeaturedItem = ({ item }) => (
         <TouchableOpacity
@@ -73,11 +86,18 @@ export default function Home() {
             <Image source={{ uri: 'https://via.placeholder.com/50' }} style={styles.popularImage} />
             <View style={styles.popularText}>
                 <Text style={[styles.itemTitle, { color: colorTheme }]}>{item.name}</Text>
-                <Text style={{ color: authorColor }}>{item.author}</Text>
-                <Text style={styles.itemPrice}>{item.price}</Text>
+                <Text style={{ color: authorColor }}>Vendu par: {item.seller_id}</Text>
+                <Text style={styles.itemPrice}>{`${item.price}$`}</Text>
             </View>
-            <TouchableOpacity style={{ marginRight: 10 }}>
-                <Icon name={item.liked ? 'heart' : 'heart-outline'} size={24} color="red" />
+            <TouchableOpacity
+                style={{ marginRight: 10 }}
+                onPress={() => handleToggleFavorite(item.id)}>
+                <Icon
+                    name={FavoritesIDList.includes(item.id) ? "heart" : "heart-outline"}
+                    size={32}
+                    color="red"
+                />
+
             </TouchableOpacity>
         </TouchableOpacity>
     );
@@ -97,9 +117,9 @@ export default function Home() {
 
                 <View style={styles.featuredSection}>
                     <Text style={[styles.sectionTitle, { color: colorTheme }]}>Nouveaux produits</Text>
-                    {isLoading ? (
+                    {isLoadingFeatured ? (
                         <Text style={{ color: colorTheme }}>Chargement...</Text>
-                    ) : error ? (
+                    ) : errorFeatured ? (
                         <Text style={{ color: 'red' }}>Erreur de chargement des produits</Text>
                     ) : (
                         <FlatList
@@ -118,12 +138,29 @@ export default function Home() {
                         <Text style={[styles.viewAll, { color: '#FF4C4C' }]}>Voir tout</Text>
                     </TouchableOpacity>
                 </View>
+
+
+                {isLoadingPopular ? (
+                    <Text style={{ color: colorTheme }}>Chargement...</Text>
+                ) : errorPopular ? (
+                    <Text style={{ color: 'red' }}>Erreur de chargement des produits populaires</Text>
+                ) : (
+                    <FlatList
+                        data={popularPrints}
+                        renderItem={renderPopularItem}
+                        keyExtractor={(item) => item.id.toString()}
+                        style={styles.popularList}
+                    />
+                )}
+
+
                 <FlatList
                     data={popularPrints}
                     renderItem={renderPopularItem}
                     keyExtractor={(item) => item.id.toString()}
                     style={styles.popularList}
                 />
+
             </View>
             <ProductPopup
                 visible={modalVisible}

@@ -1,19 +1,74 @@
-import React from "react";
+import React, {useState, useEffect, useCallback} from "react";
 import { Text, View, StyleSheet, TouchableOpacity, Image, SafeAreaView, FlatList } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
-import { useSelector } from "react-redux";
-
-const data = [
-    { id: 1, name: "Projet 1", user: "Jane Cooper", date: "20/11/2024", image: "https://via.placeholder.com/50" },
-    { id: 2, name: "Projet 1", user: "Jane Cooper", date: "20/11/2024", image: "https://via.placeholder.com/50" },
-    { id: 3, name: "Projet 1", user: "Jane Cooper", date: "20/11/2024", image: "https://via.placeholder.com/50" },
-];
+import { useDispatch, useSelector } from "react-redux";
+import { API } from "../utils/API";
+import { removeProductFromFavorites } from "../redux/favoriteSlice";
+import { addProductToBasket } from "../redux/basketSlice";
+import {useFocusEffect} from "@react-navigation/native";
 
 export default function Favorites() {
+    const dispatch = useDispatch();
     const theme = useSelector((state) => state.theme.mode);
     const colorTheme = theme === "light" ? "black" : "white";
     const themedBackgroundColor = theme === "light" ? "#F0F0F0" : "#2D2D2D";
     const cardTheme = theme === "light" ? "#FFF" : "#424242";
+
+    const idFavorites = useSelector((state) => state.favorites.idProductsInFavorites);
+    const token = useSelector((state) => state.user.token);
+    const [favoriteProducts, setFavoriteProducts] = useState([]);
+
+    const fetchFavoriteProducts = async () => {
+        try {
+            if (!idFavorites || idFavorites.length === 0) {
+                setFavoriteProducts([]);
+                return;
+            }
+
+            console.log("id des favoris : ", idFavorites);
+
+            const productDetails = await Promise.all(
+                idFavorites.map(async (productId) => {
+                    try {
+                        const response = await API.get(`/product/${productId}`, {
+                            headers: { Authorization: `Bearer ${token}` },
+                        });
+
+                        response.data.price = parseFloat(response.data.price);
+
+                        return response.data;
+                    } catch (error) {
+                        console.error(`Erreur lors du chargement du produit ${productId} :`, error);
+                        return null;
+                    }
+                })
+            );
+
+            setFavoriteProducts(productDetails.filter(item => item !== null && item !== undefined));
+        } catch (error) {
+            console.error("Erreur lors du chargement des favoris :", error);
+            setFavoriteProducts([]);
+        }
+    };
+
+    useEffect(() => {
+        fetchFavoriteProducts();
+    }, [idFavorites, token]);
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchFavoriteProducts();
+        }, [idFavorites])
+    );
+
+    const removeFavorite = (id) => {
+        dispatch(removeProductFromFavorites(id));
+        setFavoriteProducts(prevFavorites => prevFavorites.filter(item => item.id !== id));
+    };
+
+    const addToBasket = (id) => {
+        dispatch(addProductToBasket(id));
+    };
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: themedBackgroundColor }]}>
@@ -25,19 +80,25 @@ export default function Favorites() {
                 </View>
             </View>
 
-            {/* Liste des projets */}
+            {/* Liste des produits favoris */}
             <FlatList
-                data={data}
+                data={favoriteProducts}
                 renderItem={({ item }) => (
                     <View style={[styles.card, { backgroundColor: cardTheme }]}>
-                        <Image source={{ uri: item.image }} style={styles.cardImage} />
+                        <Image source={{ uri: item.image || "https://via.placeholder.com/50" }} style={styles.cardImage} />
                         <View style={styles.cardTextContainer}>
                             <Text style={[styles.cardTitle, { color: colorTheme }]}>{item.name}</Text>
-                            <Text style={[styles.cardSubtitle, { color: colorTheme }]}>{item.user}</Text>
-                            <Text style={[styles.cardDate, { color: colorTheme }]}>Commandé : {item.date}</Text>
+                            <Text style={[styles.cardSubtitle, { color: colorTheme }]}>Prix: ${item.price.toFixed(2)}</Text>
                         </View>
-                        <TouchableOpacity style={styles.cartButton}>
+
+
+                        <TouchableOpacity style={styles.cartButton} onPress={() => addToBasket(item.id)}>
                             <Icon name="cart-outline" size={24} color="#FFFFFF" />
+                        </TouchableOpacity>
+
+
+                        <TouchableOpacity style={styles.removeButton} onPress={() => removeFavorite(item.id)}>
+                            <Icon name="trash-outline" size={24} color="#FFFFFF" />
                         </TouchableOpacity>
                     </View>
                 )}
@@ -101,11 +162,14 @@ const styles = StyleSheet.create({
         fontSize: 14,
         marginVertical: 5,
     },
-    cardDate: {
-        fontSize: 12,
-    },
     cartButton: {
         backgroundColor: "#E40D2F",
+        padding: 10,
+        borderRadius: 25,
+        marginRight: 10,
+    },
+    removeButton: {
+        backgroundColor: "#D32F2F",
         padding: 10,
         borderRadius: 25,
     },

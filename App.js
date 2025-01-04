@@ -20,6 +20,8 @@ import Favorites from "./screens/Favorites";
 import OrderHistory from "./screens/OrderHistory";
 import Settings from "./screens/Settings";
 import {getThemeFromStorage, toggleTheme} from "./redux/themeSlice";
+import {getBasketFromStorage} from "./redux/basketSlice";
+import {getFavoritesFromStorage} from "./redux/favoriteSlice";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -227,6 +229,9 @@ function RootNavigator() {
         const loadData = async () => {
             await dispatch(getUserFromStorage());
             await dispatch(getThemeFromStorage(systemTheme));
+            await dispatch(getBasketFromStorage());
+            await dispatch(getFavoritesFromStorage());
+
             setIsLoading(false);
         };
         setTimeout(loadData, 800); // todo animation
