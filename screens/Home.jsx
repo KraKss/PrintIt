@@ -14,6 +14,7 @@ import { useNavigation } from "@react-navigation/native";
 import { fetcher } from "../utils/API";
 import useSWR from "swr";
 import {removeProductFromFavorites,addProductToFavorites} from "../redux/favoriteSlice";
+import {addProductToBasket} from "../redux/basketSlice";
 import ProductPopup from './ProductPopup';
 import {useState} from "react";
 
@@ -23,6 +24,7 @@ export default function Home() {
     const dispatch = useDispatch();
     const theme = useSelector((state) => state.theme.mode);
     const FavoritesIDList = useSelector((state) => state.favorites.idProductsInFavorites);
+    const basket = useSelector((state) => state.basket);
     const colorTheme = theme === 'light' ? 'black' : 'white';
     const themedBackgroundColor = theme === 'light' ? '#F0F0F0' : '#2D2D2D';
     const cardTheme = theme === 'light' ? '#FFF' : '#424242';
@@ -40,7 +42,11 @@ export default function Home() {
         setSelectedProduct(null);
         setModalVisible(false);
     };
-    
+
+    const onOrder = () => {
+        dispatch(addProductToBasket(selectedProduct.id));
+    }
+
     const handleToggleFavorite = (productId) => {
         if (FavoritesIDList.includes(productId)) {
             dispatch(removeProductFromFavorites(productId));
@@ -61,7 +67,7 @@ export default function Home() {
     );
 
     //popularPrints.forEach(print => {console.log(print);})
-    console.log(FavoritesIDList);
+    //console.log(FavoritesIDList);
 
     const isLoadingFeatured = !featuredItems && !errorFeatured;
     const isLoadingPopular = !popularPrints && !errorPopular;
@@ -158,6 +164,7 @@ export default function Home() {
                 visible={modalVisible}
                 product={selectedProduct}
                 onClose={closeModal}
+                onOrder={onOrder}
             />
         </SafeAreaView>
     );
