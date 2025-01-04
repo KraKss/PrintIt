@@ -30,6 +30,16 @@ export default function Home() {
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const handleLogout = () => dispatch(logout());
+
+    const openModal = (product) => {
+        setSelectedProduct(product);
+        setModalVisible(true);
+    };
+
+    const closeModal = () => {
+        setSelectedProduct(null);
+        setModalVisible(false);
+    };
     
     const handleToggleFavorite = (productId) => {
         if (FavoritesIDList.includes(productId)) {
