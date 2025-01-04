@@ -2,6 +2,8 @@ import { createSlice } from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setAuthToken } from '../utils/API';
 
+
+
 const userSlice = createSlice({
     name: 'user',
     initialState: {
@@ -35,7 +37,7 @@ const userSlice = createSlice({
     },
 });
 
-export const { login, logout, setUserFromStorage } = userSlice.actions;
+export const { login, logout, setUserFromStorage} = userSlice.actions;
 
 export const getUserFromStorage = () => async (dispatch) => {
     try {
