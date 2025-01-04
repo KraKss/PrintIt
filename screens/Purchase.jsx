@@ -33,6 +33,7 @@ export default function Purchases() {
                 setPurchases([]);
                 return;
             }
+            console.log(idProductsInBasket);
 
             const productDetails = await Promise.all(
                 idProductsInBasket.map(async (productId) => {
@@ -42,13 +43,13 @@ export default function Purchases() {
                         });
 
                         if (!response.data || typeof response.data.price !== "number") {
-                            console.warn(`Produit invalide reçu pour ID ${productId}:`, response.data);
+                            console.warn(`Produit invalide reçu pour ID ${productId}:`, response.data); //TODO a retirer
                             response.data.price = parseFloat(response.data.price);
                         }
 
                         return response.data;
                     } catch (error) {
-                        return {"description": "Le produit n'existe plus", "filament_type": 0, "id": 0, "name": "Produit Supprimé", "price": 0, "seller_id": 0};
+                        return {"description": "Le produit n'existe plus", "filament_type": 0, "id": productId, "name": "Produit Supprimé", "price": 0, "seller_id": 0};
                         //TODO comme pour BI ajouter pour chaque table en id 0 un produit par default
                     }
                 })

@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const basketSlice = createSlice({
     name: 'basket',
     initialState: {
-        idProductsInBasket: [1,3,8,100],
+        idProductsInBasket: [],
     },
     reducers: {
         addProductToBasket: (state, action) => {

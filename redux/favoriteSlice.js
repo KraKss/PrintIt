@@ -4,7 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const favoriteSlice = createSlice({
     name: "favorites",
     initialState: {
-        idProductsInFavorites: [1,3,8],
+        idProductsInFavorites: [],
     },
     reducers: {
         addProductToFavorites: (state, action) => {
