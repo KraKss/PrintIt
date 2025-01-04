@@ -34,7 +34,7 @@ export default function ProductPopup({ visible, product, onClose, onOrder }) {
                                 <Text style={styles.modalLabel}>Prix:</Text> {product.price}
                             </Text>
                             <Text style={styles.modalDetail}>
-                                <Text style={styles.modalLabel}>Filament:</Text> {product.filament}
+                                <Text style={styles.modalLabel}>Filament:</Text> {product.filament_type || "?"}
                             </Text>
                             <TouchableOpacity
                                 style={styles.orderButton}
