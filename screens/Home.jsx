@@ -74,7 +74,7 @@ export default function Home() {
         >
             <Image style={styles.featuredImage} source={{ uri: `https://picsum.photos/id/${item.id + 3}/200/300` }} />
             <Text style={{ ...styles.featuredTitle, color: colorTheme }}>{item.name}</Text>
-            <Text style={{ ...styles.featuredAuthor, color: authorColor }}>{item.description}</Text>
+            <Text style={{ ...styles.featuredDescription, color: authorColor }}>{item.description}</Text>
             <Text style={styles.featuredPrice}>{`${item.price}$`}</Text>
         </TouchableOpacity>
     );
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     },
     featuredSection: {
         alignItems: 'center',
-        marginVertical: 20,
+        marginVertical: 0,
     },
     featuredItem: {
         alignItems: 'center',
@@ -191,8 +191,9 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginTop: 10,
     },
-    featuredAuthor: {
+    featuredDescription: {
         color: '#888',
+        marginBottom: 10,
     },
     featuredPrice: {
         color: '#FF4C4C',
