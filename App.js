@@ -14,12 +14,14 @@ import Orders from "./screens/Orders";
 import Projects from "./screens/Projects";
 import Icon from "react-native-vector-icons/Ionicons";
 import {createDrawerNavigator, DrawerItemList} from "@react-navigation/drawer";
-import {Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, useColorScheme} from "react-native";
+import {Image, SafeAreaView, StatusBar, Text, TouchableOpacity, useColorScheme} from "react-native";
 import Profile from "./screens/Profile";
 import Favorites from "./screens/Favorites";
 import OrderHistory from "./screens/OrderHistory";
 import Settings from "./screens/Settings";
 import {getThemeFromStorage, toggleTheme} from "./redux/themeSlice";
+import {getBasketFromStorage} from "./redux/basketSlice";
+import {getFavoritesFromStorage} from "./redux/favoriteSlice";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -219,6 +221,7 @@ function AppStack() {
 function RootNavigator() {
     const dispatch = useDispatch();
     const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
+    const theme = useSelector((state) => state.theme.mode);
     const [isLoading, setIsLoading] = useState(true);
     const systemTheme = useColorScheme();
 
@@ -226,6 +229,9 @@ function RootNavigator() {
         const loadData = async () => {
             await dispatch(getUserFromStorage());
             await dispatch(getThemeFromStorage(systemTheme));
+            await dispatch(getBasketFromStorage());
+            await dispatch(getFavoritesFromStorage());
+
             setIsLoading(false);
         };
         setTimeout(loadData, 800); // todo animation
@@ -236,9 +242,15 @@ function RootNavigator() {
     }
 
     return (
-        <NavigationContainer>
-            {isAuthenticated ? <DrawerNavigator /> : <AuthStack />}
-        </NavigationContainer>
+        <>
+            <StatusBar
+                barStyle={theme === 'light' ? 'dark-content' : 'light-content'}
+                backgroundColor={theme === 'light' ? '#ffffff' : '#000000'}
+            />
+            <NavigationContainer>
+                {isAuthenticated ? <DrawerNavigator /> : <AuthStack />}
+            </NavigationContainer>
+        </>
     );
 }
 

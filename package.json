@@ -24,10 +24,13 @@
     "react-native-country-codes-picker": "^2.3.5",
     "react-native-vector-icons": "^10.2.0",
     "react-redux": "^9.2.0",
+    "react-stars": "^2.2.5",
     "swr": "^2.3.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
+    "@babel/core": "^7.20.0",
+    "react-native-ratings": "^8.1.0",
+    "react-native-star-rating-widget": "^1.9.2"
   },
   "private": true
 }

@@ -2,12 +2,15 @@ import { createSlice } from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setAuthToken } from '../utils/API';
 
+
+
 const userSlice = createSlice({
     name: 'user',
     initialState: {
         isAuthenticated: false,
         userInfo: null,
         token: null,
+        modeSellerActivated: false,
     },
     reducers: {
         login: (state, action) => {
@@ -32,10 +35,13 @@ const userSlice = createSlice({
             state.token = action.payload.token;
             setAuthToken(action.payload.token);
         },
+        toggleModeSeller: (state) => {
+            state.modeSellerActivated = !state.modeSellerActivated;
+        },
     },
 });
 
-export const { login, logout, setUserFromStorage } = userSlice.actions;
+export const { login, logout, setUserFromStorage,toggleModeSeller} = userSlice.actions;
 
 export const getUserFromStorage = () => async (dispatch) => {
     try {

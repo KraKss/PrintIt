@@ -1,34 +1,199 @@
-import { Text, View, StyleSheet, TouchableOpacity, Image, SafeAreaView, FlatList } from "react-native";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
+import {
+    View,
+    Text,
+    StyleSheet,
+    Image,
+    TouchableOpacity,
+    FlatList,
+    SafeAreaView,
+} from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../redux/userSlice";
+import { useNavigation } from "@react-navigation/native";
+import { API } from "../utils/API";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
+
 
 export default function Orders() {
+    const navigation = useNavigation();
+    const dispatch = useDispatch();
+    const user = useSelector((state) => state.user.userInfo);
+    const token = useSelector((state) => state.user.token);
+    const theme = useSelector((state) => state.theme.mode);
+    const colorTheme = theme === "light" ? "black" : "white";
+    const themedBackgroundColor = theme === "light" ? "#F9F9F9" : "#2D2D2D";
+    const cardTheme = theme === "light" ? "#FFF" : "#424242";
 
-    return (
-        <View style={styles.container}>
-            <Text style={styles.text}>Bienvenue sur l'écran Orders !</Text>
-        </View>
+    const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [filter, setFilter] = useState("EnCours");
+
+    // Fonction pour récupérer les commandes de l'utilisateur
+    const fetchOrders = async () => {
+        try {
+            if (!user?.id || !token) return;
+
+            setLoading(true);
+            const response = await API.get(`/order/buyer/${user.id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            setOrders(response.data);
+        } catch (error) {
+            console.error("Erreur lors de la récupération des commandes :", error);
+            setOrders([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchOrders();
+        }, [user, token])
     );
 
+
+    useEffect(() => {
+        fetchOrders();
+    }, [user, token]);
+
+    // Filtrer les commandes en fonction de leur statut
+    const filteredOrders =
+        filter === "EnCours"
+            ? orders.filter((order) => order.shipping_status !== "delivered")
+            : orders.filter((order) => order.shipping_status === "delivered");
+
+    const getStatusBadge = (status) => {
+        switch (status) {
+            case "shipped":
+                return { text: "En cours de livraison...", color: "#04A68D" };
+            case "in_transit":
+                return { text: "En cours d'impression...", color: "#FFC403" };
+            case "delivered":
+                return { text: "Livré", color: "#787878" };
+            case "not_shipped":
+                return { text: "En attente de traitement", color: "#e3b64d" };
+            default:
+                return { text: "Inconnu", color: "#E40D2F" };
+        }
+    };
+
+    const getStatusIcon = (status) => {
+        switch (status) {
+            case "shipped":
+                return <Icon name="checkmark-circle-outline" color={"#04A68D"} size={30} />;
+            case "in_transit":
+                return <Icon name="ellipsis-horizontal-outline" color={"#FFC403"} size={30} />;
+            case "delivered":
+                return <Icon name="archive-outline" color={"#787878"} size={30} />;
+            case "not_shipped":
+                return <Icon name="alert-circle-outline" color={"#e3b64d"} size={30} />;
+            default:
+                return <Icon name="help-outline" color={"#E40D2F"} size={30} />;
+        }
+    };
+
+    const renderOrder = ({ item }) => {
+        const statusBadge = getStatusBadge(item.shipping_status);
+        const statusIcon = getStatusIcon(item.shipping_status);
+
+        return (
+            <View style={[styles.card, { backgroundColor: cardTheme }]}>
+                <Image source={{ uri: "https://via.placeholder.com/50" }} style={styles.orderImage} />
+                <View style={styles.textContainer}>
+                    <Text style={[styles.orderTitle, { color: colorTheme }]}>
+                        Commande #{item.id}
+                    </Text>
+                    <Text style={[styles.orderDetail, { color: statusBadge.color }]}>
+                        {statusBadge.text}
+                    </Text>
+                    <Text style={[styles.orderDate, { color: colorTheme }]}>
+                        Date: {new Date(item.order_date).toLocaleDateString()}
+                    </Text>
+                </View>
+                <View style={styles.statusIcon}>{statusIcon}</View>
+            </View>
+        );
+    };
+
+    return (
+        <SafeAreaView style={[styles.container, { backgroundColor: themedBackgroundColor }]}>
+            <View style={styles.mainContent}>
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => navigation.openDrawer()}>
+                        <Icon name="menu-outline" size={24} color={colorTheme} />
+                    </TouchableOpacity>
+                    <Image style={styles.logo} source={require("../assets/printit_logo.png")} />
+                    <TouchableOpacity onPress={() => dispatch(logout())}>
+                        <Icon name="search-outline" size={24} color={colorTheme} />
+                    </TouchableOpacity>
+                </View>
+                <Text style={styles.sectionTitle}>Mes commandes</Text>
+
+                {/* Boutons de filtrage */}
+                <View style={[styles.filterContainer, { backgroundColor: cardTheme }]}>
+                    <TouchableOpacity
+                        style={[
+                            styles.filterButton,
+                            filter === "EnCours" && styles.activeFilterButton,
+                        ]}
+                        onPress={() => setFilter("EnCours")}
+                    >
+                        <Text
+                            style={[
+                                styles.filterButtonText,
+                                filter === "EnCours" && styles.activeFilterButtonText,
+                            ]}
+                        >
+                            En cours
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[
+                            styles.filterButton,
+                            filter === "Historique" && styles.activeFilterButton,
+                        ]}
+                        onPress={() => setFilter("Historique")}
+                    >
+                        <Text
+                            style={[
+                                styles.filterButtonText,
+                                filter === "Historique" && styles.activeFilterButtonText,
+                            ]}
+                        >
+                            Historique
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* Liste des commandes */}
+                {loading ? (
+                    <Text style={{ textAlign: "center", color: colorTheme }}>Chargement...</Text>
+                ) : (
+                    <FlatList
+                        data={filteredOrders}
+                        renderItem={renderOrder}
+                        keyExtractor={(item) => item.id.toString()}
+                        contentContainerStyle={styles.orderList}
+                        ListEmptyComponent={
+                            <Text style={[styles.emptyText, { color: colorTheme }]}>
+                                Aucune commande trouvée
+                            </Text>
+                        }
+                    />
+                )}
+            </View>
+        </SafeAreaView>
+    );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#FFFFFF",
-    },
-    sidebarOverlay: {
-        flex: 1,
-        position: "absolute",
-        width: "100%",
-        height: "100%",
-        backgroundColor: "rgba(0,0,0,0.7)",
-        zIndex: 99,
-    },
-    closeSidebar: {
-        position: "absolute",
-        top: 40,
-        right: 20,
     },
     mainContent: {
         flex: 1,
@@ -55,7 +220,6 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#F5F5F5",
         borderRadius: 20,
         marginHorizontal: 35,
         marginVertical: 10,
@@ -65,7 +229,6 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         paddingHorizontal: 35,
         borderRadius: 20,
-        backgroundColor: "transparent",
         marginHorizontal: 25,
     },
     activeFilterButton: {
@@ -83,7 +246,6 @@ const styles = StyleSheet.create({
     },
     card: {
         flexDirection: "row",
-        backgroundColor: "#fff",
         padding: 15,
         borderRadius: 10,
         marginBottom: 10,
@@ -93,32 +255,8 @@ const styles = StyleSheet.create({
         shadowRadius: 5,
         elevation: 2,
     },
-    orderImage: {
-        width: 50,
-        height: 50,
-        borderRadius: 5,
-        marginRight: 15,
-    },
-    textContainer: {
-        flex: 1,
-    },
-    orderTitle: {
-        fontSize: 18,
-        fontWeight: "bold",
-    },
-    orderDetail: {
-        fontSize: 14,
-        color: "#E40D2F",
-        marginVertical: 2,
-    },
-    orderDate: {
-        fontSize: 12,
-        color: "#999",
-        marginTop: 5,
-    },
     emptyText: {
         textAlign: "center",
-        color: "#999",
         fontSize: 16,
         marginTop: 20,
     },
