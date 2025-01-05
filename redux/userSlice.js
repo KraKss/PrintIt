@@ -10,6 +10,7 @@ const userSlice = createSlice({
         isAuthenticated: false,
         userInfo: null,
         token: null,
+        modeSellerActivated: false,
     },
     reducers: {
         login: (state, action) => {
@@ -34,10 +35,13 @@ const userSlice = createSlice({
             state.token = action.payload.token;
             setAuthToken(action.payload.token);
         },
+        toggleModeSeller: (state) => {
+            state.modeSellerActivated = !state.modeSellerActivated;
+        },
     },
 });
 
-export const { login, logout, setUserFromStorage} = userSlice.actions;
+export const { login, logout, setUserFromStorage,toggleModeSeller} = userSlice.actions;
 
 export const getUserFromStorage = () => async (dispatch) => {
     try {
