@@ -17,7 +17,7 @@ export default function Projects({ navigation }) {
 
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [selectedProductId, setSelectedProductId] = useState(null); // Suivi du produit sélectionné
+    const [selectedProductId, setSelectedProductId] = useState(null);
 
     const colorTheme = theme === "light" ? "black" : "white";
     const themedBackgroundColor = theme === "light" ? "#F9F9F9" : "#2D2D2D";
@@ -28,9 +28,7 @@ export default function Projects({ navigation }) {
 
         try {
             setLoading(true);
-            const response = await API.get(`/product/seller/${user.id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const response = await API.get(`/product/seller/${user.id}`);
             setProducts(response.data);
         } catch (error) {
             console.error("Erreur lors du chargement des produits :", error);
@@ -50,18 +48,6 @@ export default function Projects({ navigation }) {
         }, [user, token])
     );
 
-    // Fonction pour supprimer un produit
-    const deleteProduct = async (productId) => {
-        try {
-            await API.delete(`/product/${productId}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            setProducts(products.filter(product => product.id !== productId)); // Mise à jour locale
-        } catch (error) {
-            console.error("Erreur lors de la suppression du produit :", error);
-        }
-    };
-
     const showAlertNotImplemented = () => {
         Alert.alert(
             "Oops",
@@ -72,7 +58,6 @@ export default function Projects({ navigation }) {
             { cancelable: true }
         );
     };
-
 
     if (!modeSellerActivated) {
         return (
@@ -93,7 +78,7 @@ export default function Projects({ navigation }) {
 
         return (
             <TouchableOpacity
-                onPress={() => setSelectedProductId(isSelected ? null : item.id)} // Toggle sélection
+                onPress={() => setSelectedProductId(isSelected ? null : item.id)}
                 style={[styles.productCard, { backgroundColor: cardTheme, height: isSelected ? 200 : 100 }]}
             >
                 <Image source={{ uri: item.image || "https://via.placeholder.com/100" }} style={styles.productImage} />

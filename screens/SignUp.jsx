@@ -47,7 +47,7 @@ export default function SignUp({ navigation }) {
 
         try {
             const formattedName = `${firstname} ${name}`
-            const response = await API.post(`${process.env.EXPO_PUBLIC_BASE_API_ROUTE}${process.env.EXPO_PUBLIC_CREATE_USER_ROUTE}`, {
+            const response = await API.post(`${process.env.EXPO_PUBLIC_CREATE_USER_ROUTE}`, {
                 name: formattedName,
                 email,
                 password,

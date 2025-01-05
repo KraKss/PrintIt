@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import {useCallback, useState} from "react";
 import { API } from "../utils/API";
-import { Text, View, StyleSheet, TouchableOpacity, Image, SafeAreaView, FlatList } from "react-native";
-import Icon from "react-native-vector-icons/Ionicons";
+import {Text, View, StyleSheet, TouchableOpacity, Image, SafeAreaView, FlatList, Alert, Linking} from "react-native";
 import StarRating from 'react-native-star-rating-widget';
 import { useSelector, useDispatch } from "react-redux";
-import { logout } from "../redux/userSlice";
+import {logout, updateUserImage} from "../redux/userSlice";
 import {useFocusEffect} from "@react-navigation/native";
+import * as ImagePicker from 'expo-image-picker';
 
 export default function Profile({ navigation }) {
     const dispatch = useDispatch();
@@ -22,7 +22,7 @@ export default function Profile({ navigation }) {
     const [reviews, setReviews] = useState([]);
 
     useFocusEffect(
-        React.useCallback(() => {
+        useCallback(() => {
             if (user?.id && token) {
                 fetchReviews(user.id, token);
                 fetchProducts(user.id, token);
@@ -32,9 +32,7 @@ export default function Profile({ navigation }) {
 
     const fetchReviews = async (userId, token) => {
         try {
-            const response = await API.get(`/review/${userId}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const response = await API.get(`/review/${userId}`);
             setReviews(response.data);
         } catch (error) {
             console.error("Erreur lors du chargement des reviews:", error);
@@ -44,9 +42,7 @@ export default function Profile({ navigation }) {
 
     const fetchProducts = async (userId, token) => {
         try {
-            const response = await API.get(`/product/seller/${userId}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const response = await API.get(`/product/seller/${userId}`);
             setProducts(response.data);
         } catch (error) {
             console.error("Erreur lors du chargement des produits:", error);
@@ -67,9 +63,103 @@ export default function Profile({ navigation }) {
         dispatch(logout());
     };
 
+    const uploadImage = async (uri) => {
+        const formData = new FormData();
+        formData.append('userId', user.id)
+        formData.append('image', {
+            uri,
+            name: 'profile.jpg',
+            type: 'image/jpeg',
+        });
+
+        try {
+            const response = await API.post(
+                `${process.env.EXPO_PUBLIC_PROFILE_ROUTE}/upload-image`,
+                formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            const newImagePath = response.data.imageCreated.image;
+            dispatch(updateUserImage(newImagePath));
+        } catch (error) {
+            console.error('Error uploading image:', error);
+        }
+    };
+
+    const handlePermissionBlocked = (type) => {
+        Alert.alert(
+            "Permission bloquée",
+            `Vous avez refusé l'accès à la ${type}. Veuillez activer la permission dans les paramètres.`,
+            [
+                { text: "Annuler", style: "cancel" },
+                { text: "Ouvrir les paramètres", onPress: () => Linking.openSettings() },
+            ]
+        );
+    };
+
+    const pickImage = async () => {
+        const { status, canAskAgain } = await ImagePicker.getMediaLibraryPermissionsAsync();
+        if (status === "denied" && !canAskAgain) {
+            return handlePermissionBlocked("galerie");
+        }
+
+        if (status !== "granted") {
+            const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (!permissionResult.granted) {
+                return;
+            }
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            await uploadImage(result.assets[0].uri);
+        }
+    };
+
+    const takePhoto = async () => {
+        const { status, canAskAgain } = await ImagePicker.getCameraPermissionsAsync();
+        if (status === "denied" && !canAskAgain) {
+            return handlePermissionBlocked("caméra");
+        }
+
+        if (status !== "granted") {
+            const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+            if (!permissionResult.granted) {
+                return;
+            }
+        }
+
+        const result = await ImagePicker.launchCameraAsync({
+            allowsEditing: true,
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            await uploadImage(result.assets[0].uri);
+        }
+    };
+
+    const handleProfileImagePress = () => {
+        Alert.alert(
+            "Modifier la photo de profil",
+            "Choisissez une option",
+            [
+                { text: "Prendre une photo", onPress: takePhoto },
+                { text: "Choisir depuis la galerie", onPress: pickImage },
+                { text: "Annuler", style: "cancel" },
+            ]
+        );
+    };
+
     const renderProduct = ({ item }) => (
         <View style={[styles.productCard, { backgroundColor: cardTheme }]}>
-            <Image source={{ uri: item.image || "https://via.placeholder.com/50" }} style={styles.productImage} />
+            <Image source={{ uri: `https://picsum.photos/id/${item.id + 3}/200/300` }} style={styles.productImage} />
             <View style={styles.productInfo}>
                 <Text style={[styles.productName, { color: colorTheme }]}>{item.name}</Text>
                 <Text style={[styles.productDate, { color: colorTheme }]}>Prix : {item.price}€</Text>
@@ -97,7 +187,9 @@ export default function Profile({ navigation }) {
 
             {/* Profile Section */}
             <View style={[styles.profileSection, { backgroundColor: cardTheme }]}>
-                <Image source={{ uri: user.profileImage || "https://via.placeholder.com/100" }} style={styles.profileImage} />
+                <TouchableOpacity onPress={handleProfileImagePress}>
+                    <Image source={{ uri: user.image ? `${process.env.EXPO_PUBLIC_BASE_IMAGE_ROUTE}/${user.image}` : "https://via.placeholder.com/100" }} style={styles.profileImage} />
+                </TouchableOpacity>
                 <Text style={[styles.profileName, { color: colorTheme }]}>{user.name}</Text>
                 <Text style={[styles.profileLocation, { color: colorTheme }]}>{user.address || "Adresse non renseignée"}</Text>
                 <View style={styles.ratingContainer}>
@@ -117,13 +209,18 @@ export default function Profile({ navigation }) {
             </View>
 
             {/* Models Section */}
-            <Text style={[styles.sectionTitle, { color: colorTheme }]}>Modèles</Text>
-            <FlatList
-                data={products}
-                keyExtractor={(item, index) => item.id ? item.id.toString() : index.toString()}
-                renderItem={renderProduct}
-                contentContainerStyle={styles.productList}
-            />
+            {products.length > 0 && (
+                <>
+                    <Text style={[styles.sectionTitle, { color: colorTheme }]}>Modèles en vente</Text>
+                    <FlatList
+                    data={products}
+                    keyExtractor={(item, index) => item.id ? item.id.toString() : index.toString()}
+                    renderItem={renderProduct}
+                    contentContainerStyle={styles.productList}
+                    /><
+                />
+            )}
+
         </SafeAreaView>
     );
 }

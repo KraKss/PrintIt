@@ -7,7 +7,7 @@ import {getUserFromStorage} from './redux/userSlice';
 import Login from './screens/Login';
 import SignUp from './screens/SignUp';
 import Home from './screens/Home';
-import Loading from './screens/Loading';
+import Loading from './components/Loading';
 import {createBottomTabNavigator} from "@react-navigation/bottom-tabs";
 import Purchase from "./screens/Purchase";
 import Orders from "./screens/Orders";
@@ -17,12 +17,12 @@ import {createDrawerNavigator, DrawerItemList} from "@react-navigation/drawer";
 import {Image, SafeAreaView, StatusBar, Text, TouchableOpacity, useColorScheme} from "react-native";
 import Profile from "./screens/Profile";
 import Favorites from "./screens/Favorites";
-import OrderHistory from "./screens/OrderHistory";
 import Settings from "./screens/Settings";
 import {getThemeFromStorage, toggleTheme} from "./redux/themeSlice";
 import {getBasketFromStorage} from "./redux/basketSlice";
 import {getFavoritesFromStorage} from "./redux/favoriteSlice";
-
+import ForcedReview from "./screens/ForcedReview";
+import AllProducts from "./screens/AllProducts";
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 const Drawer = createDrawerNavigator();
@@ -83,8 +83,8 @@ function DrawerNavigator() {
                 }}
             />
             <Drawer.Screen
-                name="Historique"
-                component={OrderHistory}
+                name="Avis"
+                component={ForcedReview}
                 options={{
                     drawerIcon: ({ color, size }) => (
                         <Icon name="sync" size={size} color={themeColor} />
@@ -103,6 +103,15 @@ function DrawerNavigator() {
                     ),
                     drawerLabelStyle: {
                         color: themeColor,
+                    }
+                }}
+            />
+            <Drawer.Screen
+                name="AllProducts"
+                component={AllProducts}
+                options={{
+                    drawerItemStyle: {
+                        opacity:0
                     }
                 }}
             />
@@ -137,7 +146,7 @@ function CustomDrawerContent(props) {
                     borderRadius:180,
                     marginLeft: 20
                 }}
-                       source={require('./assets/printit_logo.png')} />
+                       source={{ uri: userInfo.image ? `${process.env.EXPO_PUBLIC_BASE_IMAGE_ROUTE}/${userInfo.image}` : "https://via.placeholder.com/100" }} />
                 <TouchableOpacity onPress={() => (
                     navigation.navigate('AppStack')
                 )}>
@@ -188,7 +197,7 @@ function AppStack() {
                 }}
             />
             <Tab.Screen
-                name="Mes Achats"
+                name="Mon Panier"
                 component={Purchase}
                 options={{
                     tabBarIcon: ({ color, size }) => (

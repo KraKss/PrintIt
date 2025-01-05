@@ -5,11 +5,10 @@ import {
     Image,
     TouchableOpacity,
     FlatList,
-    SafeAreaView,
+    SafeAreaView, Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useDispatch, useSelector } from "react-redux";
-import { logout } from "../redux/userSlice";
 import { useNavigation } from "@react-navigation/native";
 import { fetcher } from "../utils/API";
 import useSWR from "swr";
@@ -17,21 +16,22 @@ import {removeProductFromFavorites,addProductToFavorites} from "../redux/favorit
 import {addProductToBasket} from "../redux/basketSlice";
 import ProductPopup from './ProductPopup';
 import {useState} from "react";
-
+import SearchBar from "./SearchBar";
+import {Header} from "../components/Header";
+import AllProducts from "./AllProducts";
 
 export default function Home() {
     const navigation = useNavigation();
     const dispatch = useDispatch();
     const theme = useSelector((state) => state.theme.mode);
     const FavoritesIDList = useSelector((state) => state.favorites.idProductsInFavorites);
-    const basket = useSelector((state) => state.basket);
+    const userInfo = useSelector((state) => state.user.userInfo);
     const colorTheme = theme === 'light' ? 'black' : 'white';
     const themedBackgroundColor = theme === 'light' ? '#F0F0F0' : '#2D2D2D';
     const cardTheme = theme === 'light' ? '#FFF' : '#424242';
     const authorColor = theme === 'light' ? '#888' : '#E5E4E4';
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
-    const handleLogout = () => dispatch(logout());
 
     const openModal = (product) => {
         setSelectedProduct(product);
@@ -44,6 +44,10 @@ export default function Home() {
     };
 
     const onOrder = () => {
+        if (selectedProduct.seller_id === userInfo.id) {
+            Alert.alert("Erreur", "Vous ne pouvez pas acheter vos propres produits")
+            return;
+        }
         dispatch(addProductToBasket(selectedProduct.id));
         setModalVisible(false);
     }
@@ -57,18 +61,14 @@ export default function Home() {
     };
 
     const { data: featuredItems, error: errorFeatured } = useSWR(
-
-        `${process.env.EXPO_PUBLIC_BASE_API_ROUTE}${process.env.EXPO_PUBLIC_PRODUCT_ROUTE}/recents`,
+        `${process.env.EXPO_PUBLIC_PRODUCT_ROUTE}/recents`,
         fetcher
     );
 
     const { data: popularPrints, error: errorPopular } = useSWR(
-        `${process.env.EXPO_PUBLIC_BASE_API_ROUTE}${process.env.EXPO_PUBLIC_PRODUCT_ROUTE}/popular`,
+        `${process.env.EXPO_PUBLIC_PRODUCT_ROUTE}/popular`,
         fetcher
     );
-
-    //popularPrints.forEach(print => {console.log(print);})
-    //console.log(FavoritesIDList);
 
     const isLoadingFeatured = !featuredItems && !errorFeatured;
     const isLoadingPopular = !popularPrints && !errorPopular;
@@ -76,11 +76,11 @@ export default function Home() {
     const renderFeaturedItem = ({ item }) => (
         <TouchableOpacity
             style={[styles.featuredItem, { backgroundColor: cardTheme }]}
-            onPress={() => openModal(item)} // Ouvre le popup
+            onPress={() => openModal(item)}
         >
             <Image style={styles.featuredImage} source={{ uri: `https://picsum.photos/id/${item.id + 3}/200/300` }} />
             <Text style={{ ...styles.featuredTitle, color: colorTheme }}>{item.name}</Text>
-            <Text style={{ ...styles.featuredAuthor, color: authorColor }}>{item.description}</Text>
+            <Text style={{ ...styles.featuredDescription, color: authorColor }}>{item.description}</Text>
             <Text style={styles.featuredPrice}>{`${item.price}$`}</Text>
         </TouchableOpacity>
     );
@@ -88,12 +88,12 @@ export default function Home() {
     const renderPopularItem = ({ item }) => (
         <TouchableOpacity
             style={[styles.popularItem, { backgroundColor: cardTheme }]}
-            onPress={() => openModal(item)} // Ouvre le popup
+            onPress={() => openModal(item)}
         >
-            <Image source={{ uri: 'https://via.placeholder.com/50' }} style={styles.popularImage} />
+            <Image source={{ uri: `https://picsum.photos/id/${item.id + 3}/200/300` }} style={styles.popularImage} />
             <View style={styles.popularText}>
                 <Text style={[styles.itemTitle, { color: colorTheme }]}>{item.name}</Text>
-                <Text style={{ color: authorColor }}>Vendu par: {item.seller_id}</Text>
+                <Text style={{ color: authorColor }}>Vendu par: {item.seller_name}</Text>
                 <Text style={styles.itemPrice}>{`${item.price}$`}</Text>
             </View>
             <TouchableOpacity
@@ -109,19 +109,16 @@ export default function Home() {
         </TouchableOpacity>
     );
 
+    const openDrawer = () => {
+        return navigation.openDrawer()
+    }
+
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: themedBackgroundColor }]}>
             <View style={styles.mainContent}>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => navigation.openDrawer()}>
-                        <Icon name="menu-outline" size={24} color={colorTheme} />
-                    </TouchableOpacity>
-                    <Image style={styles.logo} source={require('../assets/printit_logo.png')} />
-                    <TouchableOpacity onPress={handleLogout}>
-                        <Icon name="search-outline" size={24} color={colorTheme} />
-                    </TouchableOpacity>
-                </View>
+                <Header onOpenDrawer={() => navigation.openDrawer()}/>
 
+                <SearchBar data={featuredItems || []} />
                 <View style={styles.featuredSection}>
                     <Text style={[styles.sectionTitle, { color: colorTheme }]}>Nouveaux produits</Text>
                     {isLoadingFeatured ? (
@@ -141,7 +138,7 @@ export default function Home() {
 
                 <View style={styles.section}>
                     <Text style={[styles.sectionTitle, { color: colorTheme }]}>Impressions populaires</Text>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => navigation.navigate('AllProducts')}>
                         <Text style={[styles.viewAll, { color: '#FF4C4C' }]}>Voir tout</Text>
                     </TouchableOpacity>
                 </View>
@@ -179,19 +176,9 @@ const styles = StyleSheet.create({
         flex: 1,
         width: '100%'
     },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: 20,
-    },
-    logo: {
-        width: 40,
-        height: 40,
-    },
     featuredSection: {
         alignItems: 'center',
-        marginVertical: 20,
+        marginVertical: 0,
     },
     featuredItem: {
         alignItems: 'center',
@@ -210,8 +197,9 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginTop: 10,
     },
-    featuredAuthor: {
+    featuredDescription: {
         color: '#888',
+        marginBottom: 10,
     },
     featuredPrice: {
         color: '#FF4C4C',

@@ -25,14 +25,10 @@ export default function Favorites() {
                 return;
             }
 
-            console.log("id des favoris : ", idFavorites);
-
             const productDetails = await Promise.all(
                 idFavorites.map(async (productId) => {
                     try {
-                        const response = await API.get(`/product/${productId}`, {
-                            headers: { Authorization: `Bearer ${token}` },
-                        });
+                        const response = await API.get(`/product/${productId}`);
 
                         response.data.price = parseFloat(response.data.price);
 
