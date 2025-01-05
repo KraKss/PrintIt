@@ -13,11 +13,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../redux/userSlice";
 import {useFocusEffect, useNavigation} from "@react-navigation/native";
 import { API } from "../utils/API";
-import {removeProductFromBasket} from "../redux/basketSlice";
+import {clearBasket, removeProductFromBasket} from "../redux/basketSlice";
 
 export default function Purchases() {
     const navigation = useNavigation();
     const dispatch = useDispatch();
+    const user = useSelector((state) => state.user);
     const theme = useSelector((state) => state.theme.mode);
     const colorTheme = theme === 'light' ? 'black' : 'white';
     const themedBackgroundColor = theme === 'light' ? '#F9F9F9' : '#2D2D2D';
@@ -43,7 +44,7 @@ export default function Purchases() {
                         });
 
                         if (!response.data || typeof response.data.price !== "number") {
-                            console.warn(`Produit invalide reçu pour ID ${productId}:`, response.data); //TODO a retirer
+                            console.warn(`Produit reçu pour ID ${productId}:`, response.data); //TODO a retirer
                             response.data.price = parseFloat(response.data.price);
                         }
 
@@ -61,6 +62,46 @@ export default function Purchases() {
             setPurchases([]);
         }
     };
+
+    const createOrder = async () => {
+        try {
+            if (!idProductsInBasket || idProductsInBasket.length === 0) {
+                alert("Votre panier est vide !");
+                return;
+            }
+
+            // Étape 1: Création de la commande et récupération de son ID
+            const orderResponse = await API.post("/order/create", {
+                buyer_id: user.userInfo.id,
+                payment_status: "pending",
+                shipping_status: "not_shipped"
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            const orderId = orderResponse.data.order_id; // Récupérer l'ID de la commande
+
+            // Étape 2: Envoi d'un seul appel API pour ajouter tous les produits
+            await API.post("/order/items", {
+                items: idProductsInBasket.map(productId => ({
+                    order_id: orderId,
+                    product_id: productId,
+                    quantity: 1 // Modifier si besoin
+                }))
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            alert("Commande créée avec succès !");
+            dispatch(clearBasket()); // Vide le panier après la commande
+
+        } catch (error) {
+            console.error("Erreur lors de la création de la commande :", error);
+            alert("Une erreur est survenue lors de la commande.");
+        }
+    };
+
+
 
     useEffect(() => {
         fetchPurchases();
@@ -116,11 +157,11 @@ export default function Purchases() {
                     contentContainerStyle={styles.list}
                 />
 
-                {/* Total Amount and Order Button */}
+
                 <View style={[styles.footer, { backgroundColor: cardTheme }]}>
                     <Text style={[styles.totalText, { color: colorTheme }]}>Montant total</Text>
                     <Text style={[styles.totalAmount, { color: colorTheme }]}>${totalAmount}</Text>
-                    <TouchableOpacity style={styles.orderButton}>
+                    <TouchableOpacity style={styles.orderButton} onPress={createOrder}>
                         <Text style={styles.orderButtonText}>Commander</Text>
                     </TouchableOpacity>
                 </View>
