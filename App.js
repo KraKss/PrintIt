@@ -22,7 +22,7 @@ import Settings from "./screens/Settings";
 import {getThemeFromStorage, toggleTheme} from "./redux/themeSlice";
 import {getBasketFromStorage} from "./redux/basketSlice";
 import {getFavoritesFromStorage} from "./redux/favoriteSlice";
-
+import FilteredProducts from "./screens/FilteredProducts";
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 const Drawer = createDrawerNavigator();
@@ -212,6 +212,15 @@ function AppStack() {
                     tabBarIcon: ({ color, size }) => (
                         <Icon name="create-outline" size={size} color={color} />
                     ),
+                }}
+            />
+            <Tab.Screen
+                name="FilteredProducts"
+                component={FilteredProducts}
+                options={{
+                    tabBarIcon: () => false,
+                    tabBarLabel
+                    headerShown: false,
                 }}
             />
         </Tab.Navigator>
