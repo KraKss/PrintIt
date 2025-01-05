@@ -6,8 +6,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { API } from "../utils/API";
 import { useFocusEffect } from "@react-navigation/native";
 import { toggleModeSeller } from "../redux/userSlice";
+import { Alert } from 'react-native';
 
-export default function Projects() {
+export default function Projects({ navigation }) {
     const dispatch = useDispatch();
     const user = useSelector((state) => state.user.userInfo);
     const token = useSelector((state) => state.user.token);
@@ -16,6 +17,7 @@ export default function Projects() {
 
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedProductId, setSelectedProductId] = useState(null); // Suivi du produit sélectionné
 
     const colorTheme = theme === "light" ? "black" : "white";
     const themedBackgroundColor = theme === "light" ? "#F9F9F9" : "#2D2D2D";
@@ -48,6 +50,30 @@ export default function Projects() {
         }, [user, token])
     );
 
+    // Fonction pour supprimer un produit
+    const deleteProduct = async (productId) => {
+        try {
+            await API.delete(`/product/${productId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setProducts(products.filter(product => product.id !== productId)); // Mise à jour locale
+        } catch (error) {
+            console.error("Erreur lors de la suppression du produit :", error);
+        }
+    };
+
+    const showAlertNotImplemented = () => {
+        Alert.alert(
+            "Oops",
+            "Ne fonctionne pas encore pour le moment",
+            [
+                { text: "OK", onPress: () => {} }
+            ],
+            { cancelable: true }
+        );
+    };
+
+
     if (!modeSellerActivated) {
         return (
             <View style={[styles.centered, { backgroundColor: themedBackgroundColor }]}>
@@ -62,30 +88,65 @@ export default function Projects() {
         );
     }
 
-    const renderProduct = ({ item }) => (
-        <View style={[styles.productCard, { backgroundColor: cardTheme }]}>
-            <Image source={{ uri: item.image || "https://via.placeholder.com/100" }} style={styles.productImage} />
-            <View style={styles.productInfo}>
-                <Text style={[styles.productName, { color: colorTheme }]}>{item.name}</Text>
-                <Text style={[styles.productDescription, { color: colorTheme }]}>{item.description}</Text>
-                <Text style={[styles.productPrice, { color: colorTheme }]}>Prix : {item.price}€</Text>
-                <Text style={[styles.productFilament, { color: colorTheme }]}>Type de filament : {item.filament_type}</Text>
-            </View>
-        </View>
-    );
+    const renderProduct = ({ item }) => {
+        const isSelected = selectedProductId === item.id;
+
+        return (
+            <TouchableOpacity
+                onPress={() => setSelectedProductId(isSelected ? null : item.id)} // Toggle sélection
+                style={[styles.productCard, { backgroundColor: cardTheme, height: isSelected ? 200 : 100 }]}
+            >
+                <Image source={{ uri: item.image || "https://via.placeholder.com/100" }} style={styles.productImage} />
+                <View style={styles.productInfo}>
+                    <Text style={[styles.productName, { color: colorTheme }]}>{item.name}</Text>
+                    <Text style={[styles.productPrice, { color: colorTheme }]}>Prix : {item.price}€</Text>
+
+                    {isSelected && (
+                        <>
+                            <Text style={[styles.productDescription, { color: colorTheme }]}>{item.description}</Text>
+                            <Text style={[styles.productFilament, { color: colorTheme }]}>Type de filament : {item.filament_type}</Text>
+
+                            <View style={styles.buttonContainer}>
+                                <TouchableOpacity
+                                    style={styles.editButton}
+                                    onPress={() => showAlertNotImplemented()}
+                                >
+                                    <Text style={styles.editButtonText}>Modifier</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    style={styles.deleteButton}
+                                    onPress={() => showAlertNotImplemented()}
+                                >
+                                    <Text style={styles.deleteButtonText}>Supprimer</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </>
+                    )}
+                </View>
+            </TouchableOpacity>
+        );
+    };
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: themedBackgroundColor }]}>
             <TouchableOpacity
-                style={[styles.toggleButton, { backgroundColor: modeSellerActivated ? "#E40D2F" : "#4CAF50" }]}
+                style={[styles.addButtonText, { backgroundColor: modeSellerActivated ? "#E40D2F" : "#4CAF50" }]}
                 onPress={() => dispatch(toggleModeSeller())}
             >
-                <Text style={styles.toggleButtonText}>
+                <Text style={styles.addButtonText}>
                     {modeSellerActivated ? "Désactiver le mode vendeur" : "Activer le mode vendeur"}
                 </Text>
             </TouchableOpacity>
 
             <Text style={[styles.headerTitle, { color: colorTheme }]}>Mes Produits</Text>
+
+            <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => showAlertNotImplemented()}
+            >
+                <Text style={styles.addButtonText}>+ Ajouter un produit</Text>
+            </TouchableOpacity>
 
             {loading ? (
                 <Text style={[styles.loadingText, { color: colorTheme }]}>Chargement...</Text>
@@ -163,15 +224,45 @@ const styles = StyleSheet.create({
     productFilament: {
         fontSize: 14,
     },
-    toggleButton: {
-        padding: 15,
-        borderRadius: 10,
-        marginBottom: 20,
+    buttonContainer: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginTop: 10,
+    },
+    editButton: {
+        backgroundColor: "#FFA500",
+        padding: 10,
+        borderRadius: 5,
+        flex: 1,
+        marginRight: 5,
         alignItems: "center",
     },
-    toggleButtonText: {
+    editButtonText: {
+        color: "#FFF",
+        fontWeight: "bold",
+    },
+    deleteButton: {
+        backgroundColor: "#E40D2F",
+        padding: 10,
+        borderRadius: 5,
+        flex: 1,
+        marginLeft: 5,
+        alignItems: "center",
+    },
+    deleteButtonText: {
+        color: "#FFF",
+        fontWeight: "bold",
+    },
+    addButton: {
+        backgroundColor: "#4CAF50",
+        padding: 15,
+        borderRadius: 10,
+        alignItems: "center",
+        margin: 10,
+    },
+    addButtonText: {
+        color: "#FFF",
         fontSize: 16,
         fontWeight: "bold",
-        color: "#FFF",
     },
 });

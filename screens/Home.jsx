@@ -45,6 +45,7 @@ export default function Home() {
 
     const onOrder = () => {
         dispatch(addProductToBasket(selectedProduct.id));
+        setModalVisible(false);
     }
 
     const handleToggleFavorite = (productId) => {
