@@ -1,10 +1,11 @@
 import {useCallback, useState} from "react";
 import { API } from "../utils/API";
-import { Text, View, StyleSheet, TouchableOpacity, Image, SafeAreaView, FlatList } from "react-native";
+import {Text, View, StyleSheet, TouchableOpacity, Image, SafeAreaView, FlatList, Alert, Linking} from "react-native";
 import StarRating from 'react-native-star-rating-widget';
 import { useSelector, useDispatch } from "react-redux";
-import { logout } from "../redux/userSlice";
+import {logout, updateUserImage} from "../redux/userSlice";
 import {useFocusEffect} from "@react-navigation/native";
+import * as ImagePicker from 'expo-image-picker';
 
 export default function Profile({ navigation }) {
     const dispatch = useDispatch();
@@ -59,11 +60,105 @@ export default function Profile({ navigation }) {
         const average = totalRatings / reviews.length;
         return isNaN(average) ? 0 : Math.round(average);
     };
-    console.log(user.image)
+
     const countReviews = () => reviews.length;
 
     const handleLogout = () => {
         dispatch(logout());
+    };
+
+    const uploadImage = async (uri) => {
+        const formData = new FormData();
+        formData.append('userId', user.id)
+        formData.append('image', {
+            uri,
+            name: 'profile.jpg',
+            type: 'image/jpeg',
+        });
+
+        try {
+            const response = await API.post(
+                `${process.env.EXPO_PUBLIC_BASE_API_ROUTE}${process.env.EXPO_PUBLIC_PROFILE_ROUTE}/upload-image`,
+                formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            const newImagePath = response.data.imageCreated.image;
+            dispatch(updateUserImage(newImagePath));
+        } catch (error) {
+            console.error('Error uploading image:', error);
+        }
+    };
+
+    const handlePermissionBlocked = (type) => {
+        Alert.alert(
+            "Permission bloquée",
+            `Vous avez refusé l'accès à la ${type}. Veuillez activer la permission dans les paramètres.`,
+            [
+                { text: "Annuler", style: "cancel" },
+                { text: "Ouvrir les paramètres", onPress: () => Linking.openSettings() },
+            ]
+        );
+    };
+
+    const pickImage = async () => {
+        const { status, canAskAgain } = await ImagePicker.getMediaLibraryPermissionsAsync();
+        if (status === "denied" && !canAskAgain) {
+            return handlePermissionBlocked("galerie");
+        }
+
+        if (status !== "granted") {
+            const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (!permissionResult.granted) {
+                return;
+            }
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            await uploadImage(result.assets[0].uri);
+        }
+    };
+
+    const takePhoto = async () => {
+        const { status, canAskAgain } = await ImagePicker.getCameraPermissionsAsync();
+        if (status === "denied" && !canAskAgain) {
+            return handlePermissionBlocked("caméra");
+        }
+
+        if (status !== "granted") {
+            const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+            if (!permissionResult.granted) {
+                return;
+            }
+        }
+
+        const result = await ImagePicker.launchCameraAsync({
+            allowsEditing: true,
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            await uploadImage(result.assets[0].uri);
+        }
+    };
+
+    const handleProfileImagePress = () => {
+        Alert.alert(
+            "Modifier la photo de profil",
+            "Choisissez une option",
+            [
+                { text: "Prendre une photo", onPress: takePhoto },
+                { text: "Choisir depuis la galerie", onPress: pickImage },
+                { text: "Annuler", style: "cancel" },
+            ]
+        );
     };
 
     const renderProduct = ({ item }) => (
@@ -96,7 +191,9 @@ export default function Profile({ navigation }) {
 
             {/* Profile Section */}
             <View style={[styles.profileSection, { backgroundColor: cardTheme }]}>
-                <Image source={{ uri: `${process.env.EXPO_PUBLIC_BASE_IMAGE_ROUTE}/${user.image}` || "https://via.placeholder.com/100" }} style={styles.profileImage} />
+                <TouchableOpacity onPress={handleProfileImagePress}>
+                    <Image source={{ uri: user.image ? `${process.env.EXPO_PUBLIC_BASE_IMAGE_ROUTE}/${user.image}` : "https://via.placeholder.com/100" }} style={styles.profileImage} />
+                </TouchableOpacity>
                 <Text style={[styles.profileName, { color: colorTheme }]}>{user.name}</Text>
                 <Text style={[styles.profileLocation, { color: colorTheme }]}>{user.address || "Adresse non renseignée"}</Text>
                 <View style={styles.ratingContainer}>

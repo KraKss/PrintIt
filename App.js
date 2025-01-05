@@ -106,6 +106,15 @@ function DrawerNavigator() {
                     }
                 }}
             />
+            <Drawer.Screen
+                name="FilteredProducts"
+                component={FilteredProducts}
+                options={{
+                    drawerItemStyle: {
+                        opacity:0
+                    }
+                }}
+            />
         </Drawer.Navigator>
     );
 }
@@ -137,7 +146,7 @@ function CustomDrawerContent(props) {
                     borderRadius:180,
                     marginLeft: 20
                 }}
-                       source={require('./assets/printit_logo.png')} />
+                       source={{ uri: userInfo.image ? `${process.env.EXPO_PUBLIC_BASE_IMAGE_ROUTE}/${userInfo.image}` : "https://via.placeholder.com/100" }} />
                 <TouchableOpacity onPress={() => (
                     navigation.navigate('AppStack')
                 )}>
@@ -212,15 +221,6 @@ function AppStack() {
                     tabBarIcon: ({ color, size }) => (
                         <Icon name="create-outline" size={size} color={color} />
                     ),
-                }}
-            />
-            <Tab.Screen
-                name="FilteredProducts"
-                component={FilteredProducts}
-                options={{
-                    tabBarIcon: () => false,
-                    tabBarLabel
-                    headerShown: false,
                 }}
             />
         </Tab.Navigator>
