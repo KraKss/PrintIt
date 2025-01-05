@@ -22,6 +22,7 @@ import Settings from "./screens/Settings";
 import {getThemeFromStorage, toggleTheme} from "./redux/themeSlice";
 import {getBasketFromStorage} from "./redux/basketSlice";
 import {getFavoritesFromStorage} from "./redux/favoriteSlice";
+import ForcedReview from "./screens/ForcedReview";
 import FilteredProducts from "./screens/FilteredProducts";
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -83,8 +84,8 @@ function DrawerNavigator() {
                 }}
             />
             <Drawer.Screen
-                name="Historique"
-                component={OrderHistory}
+                name="Avis"
+                component={ForcedReview}
                 options={{
                     drawerIcon: ({ color, size }) => (
                         <Icon name="sync" size={size} color={themeColor} />
