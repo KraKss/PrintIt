@@ -23,7 +23,7 @@ import {getThemeFromStorage, toggleTheme} from "./redux/themeSlice";
 import {getBasketFromStorage} from "./redux/basketSlice";
 import {getFavoritesFromStorage} from "./redux/favoriteSlice";
 import ForcedReview from "./screens/ForcedReview";
-
+import FilteredProducts from "./screens/FilteredProducts";
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 const Drawer = createDrawerNavigator();
@@ -107,6 +107,15 @@ function DrawerNavigator() {
                     }
                 }}
             />
+            <Drawer.Screen
+                name="FilteredProducts"
+                component={FilteredProducts}
+                options={{
+                    drawerItemStyle: {
+                        opacity:0
+                    }
+                }}
+            />
         </Drawer.Navigator>
     );
 }
@@ -138,7 +147,7 @@ function CustomDrawerContent(props) {
                     borderRadius:180,
                     marginLeft: 20
                 }}
-                       source={require('./assets/printit_logo.png')} />
+                       source={{ uri: userInfo.image ? `${process.env.EXPO_PUBLIC_BASE_IMAGE_ROUTE}/${userInfo.image}` : "https://via.placeholder.com/100" }} />
                 <TouchableOpacity onPress={() => (
                     navigation.navigate('AppStack')
                 )}>

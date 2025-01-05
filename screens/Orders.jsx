@@ -209,9 +209,9 @@ const styles = StyleSheet.create({
         width: "100%",
     },
     header: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         padding: 20,
     },
     logo: {

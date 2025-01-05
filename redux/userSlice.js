@@ -38,10 +38,15 @@ const userSlice = createSlice({
         toggleModeSeller: (state) => {
             state.modeSellerActivated = !state.modeSellerActivated;
         },
+        updateUserImage: (state, action) => {
+            if (state.userInfo) {
+                state.userInfo.image = action.payload;
+            }
+        }
     },
 });
 
-export const { login, logout, setUserFromStorage,toggleModeSeller} = userSlice.actions;
+export const { login, logout, setUserFromStorage,toggleModeSeller, updateUserImage} = userSlice.actions;
 
 export const getUserFromStorage = () => async (dispatch) => {
     try {
