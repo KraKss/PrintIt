@@ -1,22 +1,27 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView } from "react-native";
+import React, {useCallback, useState} from "react";
+import {View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, Alert} from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
-import { useSelector } from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
+import {useFocusEffect} from "@react-navigation/native";
+import { API } from "../utils/API";
+import { login } from "../redux/userSlice";
 
 export default function ConfigurationScreen() {
+    const dispatch = useDispatch();
     const theme = useSelector((state) => state.theme.mode);
+    const token = useSelector((state) => state.user.token);
+    const user = useSelector((state) => state.user.userInfo);
     const colorTheme = theme === "light" ? "black" : "white";
     const themedBackgroundColor = theme === "light" ? "#F9F9F9" : "#2D2D2D";
     const cardTheme = theme === "light" ? "#FFF" : "#424242";
 
-    const user = {
-        user_id: 1,
-        name: "Kristin Watson",
-        email: "kristin.watson@example.com",
-        address: "123 Main St, Cincinnati, OH",
-        bank_account: "US123456789012345",
-        balance: 1250.75,
-    };
+    //console.log("From setting user", user);
+    useFocusEffect(
+        useCallback(() => {
+        }, [])
+    );
+
+
 
     const [name, setName] = useState(user.name);
     const [email, setEmail] = useState(user.email);
@@ -24,9 +29,52 @@ export default function ConfigurationScreen() {
     const [bankAccount, setBankAccount] = useState(user.bank_account);
     const [password, setPassword] = useState("");
 
-    const handleSave = () => {
-        alert("Les données ont été modifiées avec succès !");
+    const updateUserInfo = (dispatch, newUserInfo, currentToken) => {
+        const updatedUser = {
+            userInfo: newUserInfo,
+            token: currentToken,
+        };
+
+        dispatch(login(updatedUser));
     };
+
+    const handleSave = async () => {
+        try {
+            let updatedUser = {
+                id: user.id,
+                name : name === user.name ? undefined : name,
+                email : email === user.email ? undefined : email,
+                address : address === user.address ? undefined : address,
+                bank_account : bankAccount === user.bank_account ? undefined : bankAccount,
+                password: password !== "" ? password : undefined, // Ne pas envoyer si vide
+            };
+
+            console.log("Settings updta user",updatedUser);
+            const response = await API.patch("/profile", updatedUser, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (response.status === 200 || response.status === 204) {
+                Alert.alert("Succès", "Les données ont été modifiées avec succès !");
+
+                updatedUser = {
+                    id: user.id,
+                    name : name === undefined ? user.name : name,
+                    email : email === undefined ? user.email : email,
+                    address : address === undefined ? user.address : address,
+                    bank_account : bankAccount === undefined ? user.bank_account : bankAccount,
+                    password: password !== "" ? password : user.password, // Ne pas envoyer si vide
+                };
+
+                updateUserInfo(dispatch, updatedUser, token);
+            }
+
+        } catch (error) {
+            console.error("Erreur lors de la mise à jour :", error.response ? error.response.data : error.message);
+            Alert.alert("Erreur", "Une erreur est survenue lors de la mise à jour du profil.");
+        }
+    };
+
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: themedBackgroundColor }]}>

@@ -112,8 +112,17 @@ export default function Orders() {
                         {statusBadge.text}
                     </Text>
                     <Text style={[styles.orderDate, { color: colorTheme }]}>
-                        Date: {new Date(item.order_date).toLocaleDateString()}
+                        Date: {new Date(item.order_date).toLocaleString("fr-FR", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: false,
+                        timeZone: "Europe/Paris",
+                    })}
                     </Text>
+
                 </View>
                 <View style={styles.statusIcon}>{statusIcon}</View>
             </View>
