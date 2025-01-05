@@ -32,9 +32,7 @@ export default function Profile({ navigation }) {
 
     const fetchReviews = async (userId, token) => {
         try {
-            const response = await API.get(`/review/${userId}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const response = await API.get(`/review/${userId}`);
             setReviews(response.data);
         } catch (error) {
             console.error("Erreur lors du chargement des reviews:", error);
@@ -44,9 +42,7 @@ export default function Profile({ navigation }) {
 
     const fetchProducts = async (userId, token) => {
         try {
-            const response = await API.get(`/product/seller/${userId}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const response = await API.get(`/product/seller/${userId}`);
             setProducts(response.data);
         } catch (error) {
             console.error("Erreur lors du chargement des produits:", error);
@@ -78,7 +74,7 @@ export default function Profile({ navigation }) {
 
         try {
             const response = await API.post(
-                `${process.env.EXPO_PUBLIC_BASE_API_ROUTE}${process.env.EXPO_PUBLIC_PROFILE_ROUTE}/upload-image`,
+                `${process.env.EXPO_PUBLIC_PROFILE_ROUTE}/upload-image`,
                 formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',

@@ -15,13 +15,10 @@ export default function ConfigurationScreen() {
     const themedBackgroundColor = theme === "light" ? "#F9F9F9" : "#2D2D2D";
     const cardTheme = theme === "light" ? "#FFF" : "#424242";
 
-    //console.log("From setting user", user);
     useFocusEffect(
         useCallback(() => {
         }, [])
     );
-
-
 
     const [name, setName] = useState(user.name);
     const [email, setEmail] = useState(user.email);
@@ -46,13 +43,11 @@ export default function ConfigurationScreen() {
                 email : email === user.email ? undefined : email,
                 address : address === user.address ? undefined : address,
                 bank_account : bankAccount === user.bank_account ? undefined : bankAccount,
-                password: password !== "" ? password : undefined, // Ne pas envoyer si vide
+                password: password !== "" ? password : undefined,
+                image: user.image !== undefined ? user.image : undefined
             };
 
-            console.log("Settings updta user",updatedUser);
-            const response = await API.patch("/profile", updatedUser, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const response = await API.patch("/profile", updatedUser);
 
             if (response.status === 200 || response.status === 204) {
                 Alert.alert("Succès", "Les données ont été modifiées avec succès !");
@@ -63,9 +58,10 @@ export default function ConfigurationScreen() {
                     email : email === undefined ? user.email : email,
                     address : address === undefined ? user.address : address,
                     bank_account : bankAccount === undefined ? user.bank_account : bankAccount,
-                    password: password !== "" ? password : user.password, // Ne pas envoyer si vide
+                    password: password !== "" ? password : user.password,
+                    image: user.image !== undefined ? user.image : undefined
                 };
-
+                console.log(updatedUser)
                 updateUserInfo(dispatch, updatedUser, token);
             }
 

@@ -14,6 +14,7 @@ import { logout } from "../redux/userSlice";
 import {useFocusEffect, useNavigation} from "@react-navigation/native";
 import { API } from "../utils/API";
 import {clearBasket, removeProductFromBasket} from "../redux/basketSlice";
+import {Header} from "../components/Header";
 
 export default function Purchases() {
     const navigation = useNavigation();
@@ -34,17 +35,13 @@ export default function Purchases() {
                 setPurchases([]);
                 return;
             }
-            console.log(idProductsInBasket);
 
             const productDetails = await Promise.all(
                 idProductsInBasket.map(async (productId) => {
                     try {
-                        const response = await API.get(`/product/${productId}`, {
-                            headers: { Authorization: `Bearer ${token}` },
-                        });
+                        const response = await API.get(`/product/${productId}`);
 
                         if (!response.data || typeof response.data.price !== "number") {
-                            console.warn(`Produit reçu pour ID ${productId}:`, response.data); //TODO a retirer
                             response.data.price = parseFloat(response.data.price);
                         }
 
@@ -70,31 +67,24 @@ export default function Purchases() {
                 return;
             }
 
-            // Étape 1: Création de la commande et récupération de son ID
             const orderResponse = await API.post("/order/create", {
                 buyer_id: user.userInfo.id,
                 payment_status: "pending",
                 shipping_status: "not_shipped"
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
             });
 
-            const orderId = orderResponse.data.order_id; // Récupérer l'ID de la commande
+            const orderId = orderResponse.data.order_id;
 
-            // Étape 2: Envoi d'un seul appel API pour ajouter tous les produits
             await API.post("/order/items", {
                 items: idProductsInBasket.map(productId => ({
                     order_id: orderId,
                     product_id: productId,
-                    quantity: 1 // Modifier si besoin
+                    quantity: 1
                 }))
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
             });
 
             alert("Commande créée avec succès !");
-            dispatch(clearBasket()); // Vide le panier après la commande
-
+            dispatch(clearBasket());
         } catch (error) {
             console.error("Erreur lors de la création de la commande :", error);
             alert("Une erreur est survenue lors de la commande.");
@@ -135,18 +125,9 @@ export default function Purchases() {
     );
 
     return (
-        // TODO revoir ou mettre le paragraphe ci dessous
         <SafeAreaView style={[styles.container, { backgroundColor: themedBackgroundColor }]}>
             <View style={styles.mainContent}>
-                <View style={[styles.header, { backgroundColor: themedBackgroundColor }]}>
-                    <TouchableOpacity onPress={() => navigation.openDrawer()}>
-                        <Icon name="menu-outline" size={24} color={colorTheme} />
-                    </TouchableOpacity>
-                    <Image style={styles.logo} source={require('../assets/printit_logo.png')} />
-                    <TouchableOpacity onPress={() => dispatch(logout())}>
-                        <Icon name="search-outline" size={24} color={colorTheme} />
-                    </TouchableOpacity>
-                </View>
+                <Header onOpenDrawer={() => navigation.openDrawer()}/>
 
                 <Text style={styles.sectionTitle}>Panier</Text>
                 {/* Liste des achats */}

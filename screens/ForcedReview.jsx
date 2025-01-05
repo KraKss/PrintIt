@@ -33,12 +33,10 @@ export default function ForcedReview() {
 
 
     const fetchSellerNames = async (sellerId) => {
-        if (!sellerId || sellerNames[sellerId]) return; // Évite les appels inutiles
+        if (!sellerId || sellerNames[sellerId]) return;
 
         try {
-            const response = await API.get(`/profile/${sellerId}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const response = await API.get(`/profile/${sellerId}`);
 
             setSellerNames((prev) => ({ ...prev, [sellerId]: response.data.name }));
         } catch (error) {
@@ -51,9 +49,7 @@ export default function ForcedReview() {
         try {
             if (!user?.id || !token) return;
 
-            const response = await API.get(`/order/buyer/${user.id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const response = await API.get(`/order/buyer/${user.id}`);
 
             const delivered = response.data.filter((order) => order.shipping_status === "delivered");
 
@@ -71,9 +67,7 @@ export default function ForcedReview() {
         await Promise.all(
             deliveredOrders.map(async (order) => {
                 try {
-                    let response = await API.get(`/order/items/${order.id}`, {
-                        headers: { Authorization: `Bearer ${token}` },
-                    });
+                    let response = await API.get(`/order/items/${order.id}`);
 
                     items[order.id] = response.data;
                 } catch (error) {
@@ -97,9 +91,7 @@ export default function ForcedReview() {
         await Promise.all(
             productData.map(async (product) => {
                 try {
-                    const response = await API.get(`/product/${product.product_id}`, {
-                        headers: { Authorization: `Bearer ${token}` },
-                    });
+                    const response = await API.get(`/product/${product.product_id}`);
 
                     sellersData.push({
                         product_id: product.product_id,
@@ -117,16 +109,13 @@ export default function ForcedReview() {
 
     const filterNewReview = async (sellersSource) => {
         let notFoundReviews = [];
-        console.log("vvvvvvDEBUTvvvvvvvvvv");
 
         for (const seller of sellersSource) {
             const order_id = seller.order_id;
             const seller_id = seller.seller_id;
 
             try {
-                const response = await API.get(`/review/${user.id}/${seller_id}`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
+                const response = await API.get(`/review/${user.id}/${seller_id}`);
 
                 if (!response.data || response.data.length === 0) {
                     notFoundReviews.push({ order_id, seller_id });
@@ -138,7 +127,6 @@ export default function ForcedReview() {
         }
 
         setToReview(notFoundReviews);
-        console.log("^^^^^^^^^^^FIN^^^^^^^^");
     };
 
     useEffect(() => {
@@ -182,9 +170,6 @@ export default function ForcedReview() {
                     seller_id: seller_id,
                     rating: rating,
                     comment: "Fast review",
-                },
-                {
-                    headers: { Authorization: `Bearer ${token}` },
                 }
             );
 

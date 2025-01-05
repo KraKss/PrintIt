@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useDispatch, useSelector } from "react-redux";
-import { logout } from "../redux/userSlice";
 import { useNavigation } from "@react-navigation/native";
 import { fetcher } from "../utils/API";
 import useSWR from "swr";
@@ -18,14 +17,13 @@ import {addProductToBasket} from "../redux/basketSlice";
 import ProductPopup from './ProductPopup';
 import {useState} from "react";
 import SearchBar from "./SearchBar";
-
+import {Header} from "../components/Header";
 
 export default function Home() {
     const navigation = useNavigation();
     const dispatch = useDispatch();
     const theme = useSelector((state) => state.theme.mode);
     const FavoritesIDList = useSelector((state) => state.favorites.idProductsInFavorites);
-    const basket = useSelector((state) => state.basket);
     const colorTheme = theme === 'light' ? 'black' : 'white';
     const themedBackgroundColor = theme === 'light' ? '#F0F0F0' : '#2D2D2D';
     const cardTheme = theme === 'light' ? '#FFF' : '#424242';
@@ -57,17 +55,14 @@ export default function Home() {
     };
 
     const { data: featuredItems, error: errorFeatured } = useSWR(
-        `${process.env.EXPO_PUBLIC_BASE_API_ROUTE}${process.env.EXPO_PUBLIC_PRODUCT_ROUTE}/recents`,
+        `${process.env.EXPO_PUBLIC_PRODUCT_ROUTE}/recents`,
         fetcher
     );
 
     const { data: popularPrints, error: errorPopular } = useSWR(
-        `${process.env.EXPO_PUBLIC_BASE_API_ROUTE}${process.env.EXPO_PUBLIC_PRODUCT_ROUTE}/popular`,
+        `${process.env.EXPO_PUBLIC_PRODUCT_ROUTE}/popular`,
         fetcher
     );
-
-    //popularPrints.forEach(print => {console.log(print);})
-    //console.log(FavoritesIDList);
 
     const isLoadingFeatured = !featuredItems && !errorFeatured;
     const isLoadingPopular = !popularPrints && !errorPopular;
@@ -75,7 +70,7 @@ export default function Home() {
     const renderFeaturedItem = ({ item }) => (
         <TouchableOpacity
             style={[styles.featuredItem, { backgroundColor: cardTheme }]}
-            onPress={() => openModal(item)} // Ouvre le popup
+            onPress={() => openModal(item)}
         >
             <Image style={styles.featuredImage} source={{ uri: `https://picsum.photos/id/${item.id + 3}/200/300` }} />
             <Text style={{ ...styles.featuredTitle, color: colorTheme }}>{item.name}</Text>
@@ -87,9 +82,9 @@ export default function Home() {
     const renderPopularItem = ({ item }) => (
         <TouchableOpacity
             style={[styles.popularItem, { backgroundColor: cardTheme }]}
-            onPress={() => openModal(item)} // Ouvre le popup
+            onPress={() => openModal(item)}
         >
-            <Image source={{ uri: 'https://via.placeholder.com/50' }} style={styles.popularImage} />
+            <Image source={{ uri: `https://picsum.photos/id/${item.id + 3}/200/300` }} style={styles.popularImage} />
             <View style={styles.popularText}>
                 <Text style={[styles.itemTitle, { color: colorTheme }]}>{item.name}</Text>
                 <Text style={{ color: authorColor }}>Vendu par: {item.seller_id}</Text>
@@ -108,15 +103,15 @@ export default function Home() {
         </TouchableOpacity>
     );
 
+    const openDrawer = () => {
+        return navigation.openDrawer()
+    }
+
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: themedBackgroundColor }]}>
             <View style={styles.mainContent}>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => navigation.openDrawer()}>
-                        <Icon name="menu-outline" size={24} color={colorTheme} />
-                    </TouchableOpacity>
-                    <Image style={styles.logo} source={require('../assets/printit_logo.png')} />
-                </View>
+                <Header onOpenDrawer={() => navigation.openDrawer()}/>
+
                 <SearchBar data={featuredItems || []} />
                 <View style={styles.featuredSection}>
                     <Text style={[styles.sectionTitle, { color: colorTheme }]}>Nouveaux produits</Text>
@@ -174,16 +169,6 @@ const styles = StyleSheet.create({
     mainContent: {
         flex: 1,
         width: '100%'
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: 20,
-    },
-    logo: {
-        width: 40,
-        height: 40,
     },
     featuredSection: {
         alignItems: 'center',

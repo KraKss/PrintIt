@@ -15,7 +15,7 @@ const SearchBar = ({ data = [] }) => {
     const [filteredData, setFilteredData] = useState([]);
     const [isSearchActive, setIsSearchActive] = useState(false);
 
-    const navigation = useNavigation(); // Utilisation de la navigation
+    const navigation = useNavigation();
 
     const handleSearch = (text) => {
         setSearchText(text);

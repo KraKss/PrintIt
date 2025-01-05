@@ -36,10 +36,10 @@ export default function Login({ navigation }) {
         setIsLoading(true);
 
         try {
-            const response = await API.post(`${process.env.EXPO_PUBLIC_BASE_API_ROUTE}${process.env.EXPO_PUBLIC_LOGIN_ROUTE}`, { email, password });
+            const response = await API.post(`${process.env.EXPO_PUBLIC_LOGIN_ROUTE}`, { email, password });
             const token = response.data;
 
-            const userProfileResponse = await API.get(`${process.env.EXPO_PUBLIC_BASE_API_ROUTE}${process.env.EXPO_PUBLIC_PROFILE_ROUTE}?email=${email}`, {
+            const userProfileResponse = await API.get(`${process.env.EXPO_PUBLIC_PROFILE_ROUTE}?email=${email}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
 

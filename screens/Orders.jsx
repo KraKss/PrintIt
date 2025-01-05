@@ -15,6 +15,7 @@ import { useNavigation } from "@react-navigation/native";
 import { API } from "../utils/API";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
+import {Header} from "../components/Header";
 
 
 export default function Orders() {
@@ -31,15 +32,12 @@ export default function Orders() {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState("EnCours");
 
-    // Fonction pour récupérer les commandes de l'utilisateur
     const fetchOrders = async () => {
         try {
             if (!user?.id || !token) return;
 
             setLoading(true);
-            const response = await API.get(`/order/buyer/${user.id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const response = await API.get(`/order/buyer/${user.id}`);
 
             setOrders(response.data);
         } catch (error) {
@@ -61,7 +59,6 @@ export default function Orders() {
         fetchOrders();
     }, [user, token]);
 
-    // Filtrer les commandes en fonction de leur statut
     const filteredOrders =
         filter === "EnCours"
             ? orders.filter((order) => order.shipping_status !== "delivered")
@@ -132,15 +129,8 @@ export default function Orders() {
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: themedBackgroundColor }]}>
             <View style={styles.mainContent}>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => navigation.openDrawer()}>
-                        <Icon name="menu-outline" size={24} color={colorTheme} />
-                    </TouchableOpacity>
-                    <Image style={styles.logo} source={require("../assets/printit_logo.png")} />
-                    <TouchableOpacity onPress={() => dispatch(logout())}>
-                        <Icon name="search-outline" size={24} color={colorTheme} />
-                    </TouchableOpacity>
-                </View>
+                <Header onOpenDrawer={() => navigation.openDrawer()}/>
+
                 <Text style={styles.sectionTitle}>Mes commandes</Text>
 
                 {/* Boutons de filtrage */}

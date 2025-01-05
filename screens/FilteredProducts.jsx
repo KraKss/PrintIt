@@ -10,7 +10,8 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ProductPopup from './ProductPopup';
-import { useSelector } from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
+import {addProductToBasket} from "../redux/basketSlice";
 
 export default function FilteredProducts({ route, navigation }) {
     const { name, data } = route.params;
@@ -23,6 +24,7 @@ export default function FilteredProducts({ route, navigation }) {
     const themedBackgroundColor = theme === 'light' ? '#F0F0F0' : '#2D2D2D';
     const cardTheme = theme === 'light' ? '#FFF' : '#424242';
     const authorColor = theme === 'light' ? '#888' : '#E5E4E4';
+    const dispatch = useDispatch();
 
     const filteredProducts = data.filter((product) =>
         product.name.toLowerCase() === name.toLowerCase()
@@ -38,8 +40,8 @@ export default function FilteredProducts({ route, navigation }) {
         setModalVisible(false);
     };
 
-    const handleOrder = (product) => {
-        console.log('Produit commandé :', product);
+    const handleOrder = () => {
+        dispatch(addProductToBasket(selectedProduct.id));
         setModalVisible(false);
     };
 
@@ -67,7 +69,7 @@ export default function FilteredProducts({ route, navigation }) {
                     renderItem={({ item }) => (
                         <TouchableOpacity
                             style={[styles.item, { backgroundColor: cardTheme }]}
-                            onPress={() => openModal(item)} // Ouvrir le popup au clic
+                            onPress={() => openModal(item)}
                         >
                             <Text style={[styles.itemName, { color: colorTheme }]}>{item.name}</Text>
                             <Text style={[styles.itemDescription, { color: authorColor }]}>
