@@ -188,7 +188,7 @@ function AppStack() {
                 }}
             />
             <Tab.Screen
-                name="Mes Achats"
+                name="Mon Panier"
                 component={Purchase}
                 options={{
                     tabBarIcon: ({ color, size }) => (

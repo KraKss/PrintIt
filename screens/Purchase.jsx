@@ -148,7 +148,7 @@ export default function Purchases() {
                     </TouchableOpacity>
                 </View>
 
-                <Text style={styles.sectionTitle}>Mes achats</Text>
+                <Text style={styles.sectionTitle}>Panier</Text>
                 {/* Liste des achats */}
                 <FlatList
                     data={purchases}

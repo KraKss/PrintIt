@@ -31,7 +31,6 @@ export default function Home() {
     const authorColor = theme === 'light' ? '#888' : '#E5E4E4';
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
-    const handleLogout = () => dispatch(logout());
 
     const openModal = (product) => {
         setSelectedProduct(product);
@@ -117,7 +116,7 @@ export default function Home() {
                         <Icon name="menu-outline" size={24} color={colorTheme} />
                     </TouchableOpacity>
                     <Image style={styles.logo} source={require('../assets/printit_logo.png')} />
-                    <TouchableOpacity onPress={handleLogout}>
+                    <TouchableOpacity >
                         <Icon name="search-outline" size={24} color={colorTheme} />
                     </TouchableOpacity>
                 </View>

@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import {useCallback, useState} from "react";
 import { API } from "../utils/API";
 import { Text, View, StyleSheet, TouchableOpacity, Image, SafeAreaView, FlatList } from "react-native";
-import Icon from "react-native-vector-icons/Ionicons";
 import StarRating from 'react-native-star-rating-widget';
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../redux/userSlice";
@@ -22,7 +21,7 @@ export default function Profile({ navigation }) {
     const [reviews, setReviews] = useState([]);
 
     useFocusEffect(
-        React.useCallback(() => {
+        useCallback(() => {
             if (user?.id && token) {
                 fetchReviews(user.id, token);
                 fetchProducts(user.id, token);
@@ -60,7 +59,7 @@ export default function Profile({ navigation }) {
         const average = totalRatings / reviews.length;
         return isNaN(average) ? 0 : Math.round(average);
     };
-
+    console.log(user.image)
     const countReviews = () => reviews.length;
 
     const handleLogout = () => {
@@ -97,7 +96,7 @@ export default function Profile({ navigation }) {
 
             {/* Profile Section */}
             <View style={[styles.profileSection, { backgroundColor: cardTheme }]}>
-                <Image source={{ uri: user.profileImage || "https://via.placeholder.com/100" }} style={styles.profileImage} />
+                <Image source={{ uri: `${process.env.EXPO_PUBLIC_BASE_IMAGE_ROUTE}/${user.image}` || "https://via.placeholder.com/100" }} style={styles.profileImage} />
                 <Text style={[styles.profileName, { color: colorTheme }]}>{user.name}</Text>
                 <Text style={[styles.profileLocation, { color: colorTheme }]}>{user.address || "Adresse non renseignée"}</Text>
                 <View style={styles.ratingContainer}>
