@@ -17,6 +17,7 @@ import {removeProductFromFavorites,addProductToFavorites} from "../redux/favorit
 import {addProductToBasket} from "../redux/basketSlice";
 import ProductPopup from './ProductPopup';
 import {useState} from "react";
+import SearchBar from "./SearchBar";
 
 
 export default function Home() {
@@ -56,7 +57,6 @@ export default function Home() {
     };
 
     const { data: featuredItems, error: errorFeatured } = useSWR(
-
         `${process.env.EXPO_PUBLIC_BASE_API_ROUTE}${process.env.EXPO_PUBLIC_PRODUCT_ROUTE}/recents`,
         fetcher
     );
@@ -116,11 +116,8 @@ export default function Home() {
                         <Icon name="menu-outline" size={24} color={colorTheme} />
                     </TouchableOpacity>
                     <Image style={styles.logo} source={require('../assets/printit_logo.png')} />
-                    <TouchableOpacity >
-                        <Icon name="search-outline" size={24} color={colorTheme} />
-                    </TouchableOpacity>
                 </View>
-
+                <SearchBar data={featuredItems || []} />
                 <View style={styles.featuredSection}>
                     <Text style={[styles.sectionTitle, { color: colorTheme }]}>Nouveaux produits</Text>
                     {isLoadingFeatured ? (
