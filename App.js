@@ -22,7 +22,7 @@ import {getThemeFromStorage, toggleTheme} from "./redux/themeSlice";
 import {getBasketFromStorage} from "./redux/basketSlice";
 import {getFavoritesFromStorage} from "./redux/favoriteSlice";
 import ForcedReview from "./screens/ForcedReview";
-import FilteredProducts from "./screens/FilteredProducts";
+import AllProducts from "./screens/AllProducts";
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 const Drawer = createDrawerNavigator();
@@ -107,8 +107,8 @@ function DrawerNavigator() {
                 }}
             />
             <Drawer.Screen
-                name="FilteredProducts"
-                component={FilteredProducts}
+                name="AllProducts"
+                component={AllProducts}
                 options={{
                     drawerItemStyle: {
                         opacity:0

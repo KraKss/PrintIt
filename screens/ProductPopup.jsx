@@ -31,10 +31,13 @@ export default function ProductPopup({ visible, product, onClose, onOrder }) {
                             <Text style={styles.modalTitle}>{product.name}</Text>
                             <Text style={styles.modalDescription}>{product.description}</Text>
                             <Text style={styles.modalDetail}>
-                                <Text style={styles.modalLabel}>Prix:</Text> {product.price}
+                                <Text style={styles.modalLabel}>Prix:</Text> {product.price}$
                             </Text>
                             <Text style={styles.modalDetail}>
                                 <Text style={styles.modalLabel}>Filament:</Text> {product.filament_type || "Inconnu"}
+                            </Text>
+                            <Text style={styles.modalDetail}>
+                                <Text style={styles.modalLabel}>Vendeur:</Text> {product.seller_name || "Inconnu"}
                             </Text>
                             <TouchableOpacity
                                 style={styles.orderButton}

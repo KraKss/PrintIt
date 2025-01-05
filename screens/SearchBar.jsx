@@ -6,27 +6,40 @@ import {
     Text,
     StyleSheet,
     TouchableOpacity,
+    Modal, Alert
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native';
+import ProductPopup from './ProductPopup'; // Assurez-vous d'importer le popup
+import { API } from "../utils/API";
+import {addProductToBasket} from "../redux/basketSlice";
+import {useDispatch, useSelector} from "react-redux";
 
-const SearchBar = ({ data = [] }) => {
+const SearchBar = () => {
     const [searchText, setSearchText] = useState('');
     const [filteredData, setFilteredData] = useState([]);
     const [isSearchActive, setIsSearchActive] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false); // État pour le modal
+    const [selectedProduct, setSelectedProduct] = useState(null); // État pour le produit sélectionné
+    const dispatch = useDispatch();
+    const userInfo = useSelector((state) => state.user.userInfo);
 
-    const navigation = useNavigation();
-
-    const handleSearch = (text) => {
+    const handleSearch = async (text) => {
         setSearchText(text);
-
         if (text.trim() === '') {
             setFilteredData([]);
-        } else {
-            const newData = data.filter(
-                (item) => item.name && item.name.toLowerCase().includes(text.toLowerCase())
-            );
-            setFilteredData(newData);
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const response = await API.get(`${process.env.EXPO_PUBLIC_PRODUCT_ROUTE}/search?query=${text}`);
+            setFilteredData(response.data);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -40,9 +53,25 @@ const SearchBar = ({ data = [] }) => {
         setIsSearchActive(false);
     };
 
-    const handleSelectName = (name) => {
-        navigation.navigate('FilteredProducts', { name, data });
+    const handleSelectProduct = (product) => {
+        setSelectedProduct(product);
+        setModalVisible(true);
     };
+
+    const closeModal = () => {
+        setModalVisible(false);
+        setSelectedProduct(null);
+    };
+
+    const onOrder = () => {
+        if (selectedProduct.seller_id === userInfo.id) {
+            Alert.alert("Erreur", "Vous ne pouvez pas acheter vos propres produits")
+            return;
+        }
+        dispatch(addProductToBasket(selectedProduct.id));
+        setModalVisible(false);
+    }
+
     return (
         <View style={styles.container}>
             {!isSearchActive ? (
@@ -65,19 +94,31 @@ const SearchBar = ({ data = [] }) => {
                 </View>
             )}
 
-            {searchText.length > 0 && (
+            {loading && <Text style={styles.loadingText}>Chargement...</Text>}
+
+            {searchText.length > 0 && !loading && (
                 <FlatList
                     data={filteredData}
                     keyExtractor={(item, index) => index.toString()}
                     renderItem={({ item }) => (
                         <TouchableOpacity
-                            onPress={() => handleSelectName(item.name)}
+                            onPress={() => handleSelectProduct(item)} // Affiche le produit sélectionné dans le modal
                             style={styles.resultItem}
                         >
                             <Text style={styles.item}>{item.name}</Text>
                         </TouchableOpacity>
                     )}
                     style={styles.resultList}
+                />
+            )}
+
+            {/* Popup produit */}
+            {selectedProduct && (
+                <ProductPopup
+                    visible={modalVisible}
+                    product={selectedProduct}
+                    onClose={closeModal}
+                    onOrder={onOrder}
                 />
             )}
         </View>
@@ -93,6 +134,7 @@ const styles = StyleSheet.create({
     iconContainer: {
         alignSelf: 'flex-end',
         padding: 10,
+        marginRight: 20,
         borderRadius: 50,
         backgroundColor: '#f0f0f0',
         elevation: 2,
@@ -131,6 +173,11 @@ const styles = StyleSheet.create({
     },
     item: {
         fontSize: 16,
+    },
+    loadingText: {
+        fontSize: 16,
+        color: '#666',
+        paddingLeft: 15,
     },
 });
 

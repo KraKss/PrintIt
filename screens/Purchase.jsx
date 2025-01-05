@@ -112,10 +112,9 @@ export default function Purchases() {
 
     const renderPurchase = ({ item }) => (
         <View style={[styles.card, { backgroundColor: cardTheme }]}>
-            <Image source={{ uri: item.image }} style={styles.productImage} />
+            <Image source={{ uri: `https://picsum.photos/id/${item.id + 3}/200/300` }} style={styles.productImage} />
             <View style={styles.textContainer}>
                 <Text style={[styles.productName, { color: colorTheme }]}>{item.name}</Text>
-                <Text style={[styles.sellerName, { color: colorTheme }]}>{item.seller}</Text>
                 <Text style={styles.productPrice}>${item.price.toFixed(2)}</Text>
             </View>
             <TouchableOpacity style={styles.cartButton} onPress={() => removeItem(item.id)}>
@@ -202,10 +201,6 @@ const styles = StyleSheet.create({
     productName: {
         fontSize: 18,
         fontWeight: "bold",
-    },
-    sellerName: {
-        fontSize: 14,
-        marginVertical: 5,
     },
     productPrice: {
         fontSize: 16,

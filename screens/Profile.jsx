@@ -159,7 +159,7 @@ export default function Profile({ navigation }) {
 
     const renderProduct = ({ item }) => (
         <View style={[styles.productCard, { backgroundColor: cardTheme }]}>
-            <Image source={{ uri: item.image || "https://via.placeholder.com/50" }} style={styles.productImage} />
+            <Image source={{ uri: `https://picsum.photos/id/${item.id + 3}/200/300` }} style={styles.productImage} />
             <View style={styles.productInfo}>
                 <Text style={[styles.productName, { color: colorTheme }]}>{item.name}</Text>
                 <Text style={[styles.productDate, { color: colorTheme }]}>Prix : {item.price}€</Text>
@@ -209,13 +209,18 @@ export default function Profile({ navigation }) {
             </View>
 
             {/* Models Section */}
-            <Text style={[styles.sectionTitle, { color: colorTheme }]}>Modèles</Text>
-            <FlatList
-                data={products}
-                keyExtractor={(item, index) => item.id ? item.id.toString() : index.toString()}
-                renderItem={renderProduct}
-                contentContainerStyle={styles.productList}
-            />
+            {products.length > 0 && (
+                <>
+                    <Text style={[styles.sectionTitle, { color: colorTheme }]}>Modèles en vente</Text>
+                    <FlatList
+                    data={products}
+                    keyExtractor={(item, index) => item.id ? item.id.toString() : index.toString()}
+                    renderItem={renderProduct}
+                    contentContainerStyle={styles.productList}
+                    /><
+                />
+            )}
+
         </SafeAreaView>
     );
 }

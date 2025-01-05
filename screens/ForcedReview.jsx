@@ -184,15 +184,12 @@ export default function ForcedReview() {
     const renderProduct = ({ item }) => (
         <View style={[styles.card, { backgroundColor: cardTheme }]}>
             <Image
-                source={{ uri: item.image || "https://via.placeholder.com/50" }}
+                source={{ uri: `https://picsum.photos/id/${item.product_id + 3}/200/300` }}
                 style={styles.productImage}
             />
             <View style={styles.textContainer}>
-                <Text style={[styles.productName, { color: colorTheme }]}>{item.name}</Text>
+                <Text style={[styles.productName, { color: colorTheme }]}>ID de la commande : {item.order_id}</Text>
                 <Text style={[styles.productPrice, { color: colorTheme }]}>
-                    Order ID: {item.order_id} | Product ID: {item.product_id}
-                </Text>
-                <Text style={[styles.sellerName, { color: colorTheme }]}>
                     Vendeur: {sellerNames[item.seller_id] || "Chargement..."}
                 </Text>
                 <StarRating

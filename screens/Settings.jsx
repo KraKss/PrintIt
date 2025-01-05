@@ -61,7 +61,6 @@ export default function ConfigurationScreen() {
                     password: password !== "" ? password : user.password,
                     image: user.image !== undefined ? user.image : undefined
                 };
-                console.log(updatedUser)
                 updateUserInfo(dispatch, updatedUser, token);
             }
 

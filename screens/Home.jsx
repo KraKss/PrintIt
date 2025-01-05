@@ -5,7 +5,7 @@ import {
     Image,
     TouchableOpacity,
     FlatList,
-    SafeAreaView,
+    SafeAreaView, Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useDispatch, useSelector } from "react-redux";
@@ -18,12 +18,14 @@ import ProductPopup from './ProductPopup';
 import {useState} from "react";
 import SearchBar from "./SearchBar";
 import {Header} from "../components/Header";
+import AllProducts from "./AllProducts";
 
 export default function Home() {
     const navigation = useNavigation();
     const dispatch = useDispatch();
     const theme = useSelector((state) => state.theme.mode);
     const FavoritesIDList = useSelector((state) => state.favorites.idProductsInFavorites);
+    const userInfo = useSelector((state) => state.user.userInfo);
     const colorTheme = theme === 'light' ? 'black' : 'white';
     const themedBackgroundColor = theme === 'light' ? '#F0F0F0' : '#2D2D2D';
     const cardTheme = theme === 'light' ? '#FFF' : '#424242';
@@ -42,6 +44,10 @@ export default function Home() {
     };
 
     const onOrder = () => {
+        if (selectedProduct.seller_id === userInfo.id) {
+            Alert.alert("Erreur", "Vous ne pouvez pas acheter vos propres produits")
+            return;
+        }
         dispatch(addProductToBasket(selectedProduct.id));
         setModalVisible(false);
     }
@@ -87,7 +93,7 @@ export default function Home() {
             <Image source={{ uri: `https://picsum.photos/id/${item.id + 3}/200/300` }} style={styles.popularImage} />
             <View style={styles.popularText}>
                 <Text style={[styles.itemTitle, { color: colorTheme }]}>{item.name}</Text>
-                <Text style={{ color: authorColor }}>Vendu par: {item.seller_id}</Text>
+                <Text style={{ color: authorColor }}>Vendu par: {item.seller_name}</Text>
                 <Text style={styles.itemPrice}>{`${item.price}$`}</Text>
             </View>
             <TouchableOpacity
@@ -132,7 +138,7 @@ export default function Home() {
 
                 <View style={styles.section}>
                     <Text style={[styles.sectionTitle, { color: colorTheme }]}>Impressions populaires</Text>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => navigation.navigate('AllProducts')}>
                         <Text style={[styles.viewAll, { color: '#FF4C4C' }]}>Voir tout</Text>
                     </TouchableOpacity>
                 </View>
